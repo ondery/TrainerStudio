@@ -1,8 +1,8 @@
 # Trainer Studio
 
-> Trainer Studio is an open-source, local-first YOLO image annotation tool. It labels bounding boxes, polygons, oriented boxes, and pose in a browser UI on a FastAPI server that runs on your computer. Datasets stay in Ultralytics YOLO layout (data.yaml, images, labels). The workspace uses dockable panels. Twelve languages ship with the app; English is the default when no language has been saved. License: AGPL-3.0. No account and no telemetry. Repository: https://github.com/ondery/TrainerStudio
+> Status: early development. Trainer Studio 0.6.4.3 is a pre-1.0 preview. Expect bugs and breaking changes. Trainer Studio is an open-source, local-first YOLO image annotation tool. It labels bounding boxes, polygons, oriented boxes, and pose in a browser UI on a FastAPI server that runs on your computer. Datasets stay in Ultralytics YOLO layout (data.yaml, images, labels). The workspace uses dockable panels. Twelve languages ship with the app; English is the default when no language has been saved. License: AGPL-3.0. No account and no telemetry. Repository: https://github.com/ondery/TrainerStudio
 
-Trainer Studio is a YOLO labeling tool and an image annotation tool for object-detection datasets. It is an offline LabelImg alternative when you also need polygons, a class manager, and a VS Code-style workspace. Optional local training can use Ultralytics (YOLO11, YOLOv8, YOLO26 names) or an Apache-2.0 RT-DETR backend. A GPU is not required to label.
+Trainer Studio is a YOLO labeling tool and an image annotation tool for object-detection datasets. It is an offline LabelImg alternative when you also need polygons, a class manager, and a VS Code-style workspace. Optional local training is partial. With the extra packages installed it can call Ultralytics (YOLO11, YOLOv8, YOLO26 names) or an Apache-2.0 RT-DETR backend. A GPU is not required to label.
 
 ## Docs
 
@@ -15,7 +15,8 @@ Trainer Studio is a YOLO labeling tool and an image annotation tool for object-d
 - [Open core and Enterprise](https://github.com/ondery/TrainerStudio/blob/main/README.md#open-core-and-enterprise): what is included and what stays locked
 - [How to cite](https://github.com/ondery/TrainerStudio/blob/main/README.md#how-to-cite): citation text and BibTeX
 - [Citation metadata](https://github.com/ondery/TrainerStudio/blob/main/CITATION.cff): CITATION.cff
-- [Sample dataset](https://github.com/ondery/TrainerStudio/blob/main/samples/street/LICENSE.md): CC0 synthetic images used in the screenshots
+- [Roadmap](https://github.com/ondery/TrainerStudio/blob/main/README.md#roadmap--not-yet-implemented): partial and planned work, including the command registry, keybindings, overlays, PWA, and installers
+- [Sample dataset](https://github.com/ondery/TrainerStudio/blob/main/samples/street/LICENSE.md): CC0 photographs used in the screenshots, with source and license for each file
 - [Contributing](https://github.com/ondery/TrainerStudio/blob/main/CONTRIBUTING.md): local checks and the contribution terms
 - [Security](https://github.com/ondery/TrainerStudio/blob/main/SECURITY.md): report vulnerabilities through GitHub security advisories
 - [Changelog](https://github.com/ondery/TrainerStudio/blob/main/CHANGELOG.md): public releases
@@ -23,5 +24,5 @@ Trainer Studio is a YOLO labeling tool and an image annotation tool for object-d
 
 ## Optional
 
-- [Screenshots](https://github.com/ondery/TrainerStudio/blob/main/docs/screenshots): English UI, dark theme, synthetic dataset
+- [Screenshots](https://github.com/ondery/TrainerStudio/blob/main/docs/screenshots): English UI, dark theme, CC0 photographs
 - [Social preview](https://github.com/ondery/TrainerStudio/blob/main/docs/social-preview.png): 1280x640 repository image

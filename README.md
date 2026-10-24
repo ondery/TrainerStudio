@@ -3,10 +3,17 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Node.js 22](https://img.shields.io/badge/node-22-green.svg)](web/package.json)
+[![status: early development](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/ondery/TrainerStudio)
 
-Trainer Studio is a local-first, open-source image annotation tool for people who build YOLO object-detection datasets. You label bounding boxes and polygons in a browser, on a server that runs only on your computer, and the files stay in the Ultralytics YOLO layout (`data.yaml`, `images/`, `labels/`). The workspace is a dockable panel layout in the style of VS Code. The interface ships in 12 languages and defaults to English. The open core is AGPL-3.0. There is no account and no telemetry.
+Trainer Studio is a local-first, open-source image annotation tool for people who build YOLO object-detection datasets. You label bounding boxes and polygons in a browser, on a server that runs only on your computer, and the files stay in the Ultralytics YOLO layout (`data.yaml`, `images/`, `labels/`). The workspace is a dockable panel layout in the style of VS Code. The interface ships in 12 languages and defaults to English. The open core is AGPL-3.0. There is no account and no telemetry. Version 0.6.4.3 is a pre-1.0 early preview, not a stable 1.0 release.
 
-![Trainer Studio workbench in the default dark theme: a synthetic street scene with labeled cars, a person polygon, and a sign, plus the class bar, project explorer, and navigator](docs/screenshots/workbench.png)
+> [!WARNING]
+> Trainer Studio is under active development. This is a pre-1.0 early preview. Expect bugs and breaking changes. See [Roadmap / Not yet implemented](#roadmap--not-yet-implemented).
+
+> [!NOTE]
+> Status: early development.
+
+![Trainer Studio workbench in the default dark theme: a CC0 street photograph with labeled people, cars, and a sign polygon, plus the class bar, project explorer, and navigator](docs/screenshots/workbench.png)
 
 ## Contents
 
@@ -19,6 +26,7 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - [Architecture](#architecture)
 - [Project layout](#project-layout)
 - [Comparison](#comparison)
+- [Roadmap / Not yet implemented](#roadmap--not-yet-implemented)
 - [FAQ](#faq)
 - [Open core and Enterprise](#open-core-and-enterprise)
 - [How to cite](#how-to-cite)
@@ -27,6 +35,7 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 
 ## Key facts
 
+- **Status:** early development. Version 0.6.4.3 is a pre-1.0 preview
 - **What it is:** an offline YOLO labeling tool and image annotation tool for object-detection datasets
 - **License:** GNU Affero General Public License v3.0 (AGPL-3.0). See [LICENSE](LICENSE)
 - **Platforms:** Windows, macOS, and Linux
@@ -45,8 +54,8 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - Selection handles for moving, resizing, and editing vertices. Guide lines and an optional crosshair follow the pointer
 - Class hotkeys (`1`–`9`, then `Q`–`P`) and a class bar. Next class changes only the class used for the next shape
 - Ctrl+Enter saves the image and opens the next one. It does not replace a shape's class on its own
-- Suggestions from auto-label or SAM keep the class that was proposed. Accept or reject them without a silent class change
-- Optional point prompts when the SAM packages are installed. Labeling still works if they are not
+- Suggestions from auto-label or SAM keep the class that was proposed, when those optional tools are installed and return a proposal. Accept or reject them without a silent class change
+- Point prompts need the optional SAM packages and a weight file. Labeling still works if they are not installed. This path is partial. See the roadmap
 
 ### Workspace
 
@@ -54,7 +63,7 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - Project explorer for the dataset tree, an image list, and the class table
 - Navigator (minimap) with the current view, and a filmstrip
 - Raw data panel: the label file in a Monaco editor, plus JSON, `data.yaml`, and image facts
-- Command palette (Ctrl+K) and quick open (Ctrl+P)
+- Ctrl+K opens a short command list (classes, languages, and a few tools). It is not a shared command registry. Ctrl+P is quick open
 
 ### Data
 
@@ -62,24 +71,24 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - Class ids and their order come from `data.yaml` and are not renumbered on open
 - Class names, colors, and hotkeys are edited in the class manager. Removing or merging classes asks for confirmation
 - Import is the YOLO text you already have. Export writes a copy as YOLO, COCO, or Pascal VOC and does not overwrite the source dataset
-- A small public-domain sample lives in [`samples/street`](samples/street/LICENSE.md)
+- A small CC0 photograph sample lives in [`samples/street`](samples/street/LICENSE.md). Class names in that sample are car, person, bicycle, sign, light, bus, and truck
 
 ### Training
 
-Local training and auto-label are part of the open core. They stay idle until you install the optional packages in `requirements-ai.txt`.
+A local training job and auto-label are in the open core, and both are partial. They stay idle until you install the optional packages in `requirements-ai.txt` and, for SAM or a training run, the weights those packages expect. There is no separate engine-plugin slot. The `plugins/` folder in this tree is empty.
 
-- Ultralytics can train and auto-label with the YOLO11, YOLOv8, and YOLO26 model names listed in the app, or with weights you supply. Ultralytics is AGPL-3.0
-- An optional RT-DETR backend uses Hugging Face Transformers (Apache-2.0) and does not import Ultralytics. Predictions whose names are not in `data.yaml` are skipped
-- One local job runs at a time. A multi-job GPU queue is not part of the open core
+- When Ultralytics is installed, a job can use the YOLO11, YOLOv8, and YOLO26 model names listed in the app, or weights you supply. Ultralytics is AGPL-3.0. This is one local job, not a finished training product
+- An optional RT-DETR backend uses Hugging Face Transformers (Apache-2.0) and does not import Ultralytics. It runs only when Transformers is installed. Predictions whose names are not in `data.yaml` are skipped
+- A multi-job GPU queue is not part of the open core
 - CPU is enough for labeling. A GPU is optional and is used only when the installed PyTorch build can see CUDA
 
 ## Screenshots
 
-The pictures below use the default dark theme and the CC0 sample in `samples/street`. They are not photographs of a private dataset.
+The pictures below use the default dark theme and the CC0 photographs in `samples/street`. They are not a private dataset.
 
 | | |
 | --- | --- |
-| ![Dark workbench with an image, several boxes, a polygon, the class bar, the explorer, and the navigator](docs/screenshots/workbench.png) | Main workbench. Class bar along the bottom, explorer on the left, navigator over the canvas. |
+| ![Dark workbench showing a CC0 crosswalk photograph with person and car boxes, a sign polygon, the class bar, the explorer, and the navigator](docs/screenshots/workbench.png) | Main workbench. Class bar along the bottom, explorer on the left, navigator over the canvas. |
 | ![A selected polygon with vertex handles and guide lines on the canvas](docs/screenshots/selection.png) | Selection handles and guide lines. |
 | ![Class manager with the new-class dialog open](docs/screenshots/classes.png) | Class manager and the new-class dialog. |
 | ![Settings window on a local install](docs/screenshots/settings.png) | Settings. Language, guides, and the locked commercial section. |
@@ -196,7 +205,7 @@ Local file routes require a session token. `GET /api/health` returns that token,
 trainer_studio/     FastAPI app, YOLO import and export, SQLite
 web/                Next.js interface (source)
 static/             Built interface served by the API
-samples/street/     CC0 synthetic dataset used in the screenshots
+samples/street/     CC0 photographs used in the screenshots
 docs/screenshots/   Interface pictures
 docs/FAQ.md         Questions and answers
 tests/              Pytest suite for the open core
@@ -230,7 +239,30 @@ Figures below describe the public open core of Trainer Studio and the usual publ
 | YOLO files | Detect, segment, OBB, and pose text, plus `data.yaml` | Detection text, and also Pascal VOC and CreateML | YOLO is one of the export formats | YOLO is one of the documented export formats, with COCO and VOC | YOLO export from the hosted project |
 | Extra setup | A virtual environment and `pip install` | A Python/Qt install | A server install, often with Docker | A server install, or a cloud signup | An account on the hosted platform |
 
+## Roadmap / Not yet implemented
+
+Version 0.6.4.3 is a pre-1.0 early preview. The feature matrix in `docs/feature-matrix.md` marks the 0.6.3 labeling surface as present. The items below are still missing, partial, or not in this preview. A later workbench revision is in progress and is not merged here.
+
+| Item | Status |
+| --- | --- |
+| Command list | Partial. Ctrl+K opens classes, languages, and a few tools. There is no shared command registry that plugins can extend. |
+| Keybinding service | Planned. Shortcuts are a fixed map plus the shortcut editor. When-clauses and conflict checks are not in this preview. |
+| One overlay stack for menus, popovers, and dialogs | Planned. Dialogs and menus work on their own. They are not one stack. |
+| Layout audit across window sizes and languages | Planned. This tree has no automated layout audit. |
+| Installable PWA | Planned. The interface is a static page served by the local API. It does not install as an app. |
+| Training and auto-label | Partial. One local job can run after the optional packages and weights are installed. `plugins/` ships empty, so there is no engine plugin to drop in. A GPU queue is not in the open core. |
+| SAM point prompts | Partial. The tool is in the interface and does nothing until the optional packages and a weight file are present. |
+| Export formats | YOLO, COCO JSON, and Pascal VOC XML are in the core. Other formats are not. |
+| Video and camera import | Not in this preview. Frame import stays locked with the commercial add-on. |
+| Team accounts, roles, review assignment | Not in this preview. They stay locked with the commercial add-on. |
+| macOS and Linux installers | Planned. Those systems start from a Python virtual environment. This tree has no macOS or Linux installer. |
+| Tagged 1.0 release and a Windows installer in this tree | Planned. Nothing here is a 1.0 release. This preview does not ship an installer. |
+
 ## FAQ
+
+### Is this a finished 1.0?
+
+No. Version 0.6.4.3 is a pre-1.0 early preview under active development. Expect bugs and breaking changes. The [roadmap](#roadmap--not-yet-implemented) lists what is partial or not in this tree.
 
 ### Is Trainer Studio free?
 
@@ -276,7 +308,7 @@ More answers are in [docs/FAQ.md](docs/FAQ.md).
 
 ## Open core and Enterprise
 
-This repository is the open core: labeling, classes, YOLO import and export, the dockable workspace, plugins, and optional local SAM and training.
+This repository is the open core: labeling, classes, YOLO import and export, and the dockable workspace. The plugin folder is empty. Local SAM and training are partial and need optional packages.
 
 The following are available in the commercial add-on. Contact the author. They are not shipped here, and the interface keeps them locked:
 
@@ -321,4 +353,4 @@ Security reports go through [GitHub security advisories](https://github.com/onde
 
 The open core is licensed under the GNU Affero General Public License v3.0. See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md).
 
-The drawings in `samples/street` are original works dedicated to the public domain under CC0 1.0. See [samples/street/LICENSE.md](samples/street/LICENSE.md).
+The photographs in `samples/street` are CC0 1.0 works from Wikimedia Commons. See [samples/street/LICENSE.md](samples/street/LICENSE.md).

@@ -1,8 +1,12 @@
-# Synthetic documentation dataset. Images are original drawings. See LICENSE.md.
+# CC0 street photographs for the documentation sample. See LICENSE.md.
 path: .
 train: images
 val: images
 names:
   0: car
   1: person
-  2: sign
+  2: bicycle
+  3: sign
+  4: light
+  5: bus
+  6: truck

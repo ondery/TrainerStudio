@@ -1,6 +1,12 @@
 # Trainer Studio FAQ
 
+Status: early development. Version 0.6.4.3 is a pre-1.0 preview. Expect bugs and breaking changes.
+
 Short answers to the questions people ask before installing the open core. The same topics are summarized in the [README](../README.md).
+
+## Is this a finished 1.0?
+
+No. The public tree is an early preview. Labeling and YOLO save/export are what you can use today. Training, SAM, a shared command registry, installers, and a PWA are partial or not in this preview.
 
 ## Is Trainer Studio free?
 
