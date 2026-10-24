@@ -1,0 +1,17 @@
+services:
+  trainer-studio:
+    build: .
+    image: ghcr.io/owner/trainer-studio:local
+    ports:
+      - "43150:43150"
+    environment:
+      STUDIO_HOST: 0.0.0.0
+      STUDIO_PORT: "43150"
+      STUDIO_DATASET: /data
+      STUDIO_DATA: /var/lib/trainer-studio
+    volumes:
+      - ${DATASET:-./data/dataset}:/data
+      - studio-data:/var/lib/trainer-studio
+
+volumes:
+  studio-data:

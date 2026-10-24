@@ -1,0 +1,16 @@
+name: Bug
+description: A defect in labeling, import, export, or the local server
+labels: []
+body:
+  - type: textarea
+    attributes:
+      label: What happened
+      description: What you did and what you expected. Do not paste datasets or license keys.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Version
+      description: The build id from Settings or /api/health.
+    validations:
+      required: true

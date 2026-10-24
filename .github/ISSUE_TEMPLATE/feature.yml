@@ -1,0 +1,9 @@
+name: Feature
+description: A change to the core or an Enterprise idea
+body:
+  - type: textarea
+    attributes:
+      label: Proposal
+      description: What the core should do, and whether it belongs in the AGPL core or in Enterprise.
+    validations:
+      required: true

@@ -1,0 +1,1428 @@
+{
+  "id": "signlens",
+  "name": "SignLens",
+  "classes": [
+    {
+      "id": "speed_5",
+      "index": 0,
+      "group": "speed",
+      "color": "#e11d48",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "5 km/sa"
+      },
+      "en": {
+        "title": "Speed limit",
+        "detail": "5 km/h"
+      }
+    },
+    {
+      "id": "speed_10",
+      "index": 1,
+      "group": "speed",
+      "color": "#f97316",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "10 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "10 km/h"
+      }
+    },
+    {
+      "id": "speed_15",
+      "index": 2,
+      "group": "speed",
+      "color": "#eab308",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "15 km/sa"
+      },
+      "en": {
+        "title": "Speed limit",
+        "detail": "15 km/h"
+      }
+    },
+    {
+      "id": "speed_20",
+      "index": 3,
+      "group": "speed",
+      "color": "#84cc16",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "20 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "20 km/h"
+      }
+    },
+    {
+      "id": "speed_30",
+      "index": 4,
+      "group": "speed",
+      "color": "#10b981",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "30 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "30 km/h"
+      }
+    },
+    {
+      "id": "speed_40",
+      "index": 5,
+      "group": "speed",
+      "color": "#14b8a6",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "40 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "40 km/h"
+      }
+    },
+    {
+      "id": "speed_50",
+      "index": 6,
+      "group": "speed",
+      "color": "#06b6d4",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "50 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "50 km/h"
+      }
+    },
+    {
+      "id": "speed_60",
+      "index": 7,
+      "group": "speed",
+      "color": "#3b82f6",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "60 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "60 km/h"
+      }
+    },
+    {
+      "id": "speed_70",
+      "index": 8,
+      "group": "speed",
+      "color": "#6366f1",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "70 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "70 km/h"
+      }
+    },
+    {
+      "id": "speed_80",
+      "index": 9,
+      "group": "speed",
+      "color": "#8b5cf6",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "80 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "80 km/h"
+      }
+    },
+    {
+      "id": "speed_90",
+      "index": 10,
+      "group": "speed",
+      "color": "#d946ef",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "90 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "90 km/h"
+      }
+    },
+    {
+      "id": "speed_100",
+      "index": 11,
+      "group": "speed",
+      "color": "#f43f5e",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "100 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "100 km/h"
+      }
+    },
+    {
+      "id": "speed_110",
+      "index": 12,
+      "group": "speed",
+      "color": "#b45309",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "110 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "110 km/h"
+      }
+    },
+    {
+      "id": "speed_120",
+      "index": 13,
+      "group": "speed",
+      "color": "#0f766e",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "120 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "120 km/h"
+      }
+    },
+    {
+      "id": "speed_130",
+      "index": 14,
+      "group": "speed",
+      "color": "#1d4ed8",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sınırı",
+        "detail": "130 km/sa"
+      },
+      "en": {
+        "title": "Speed Limit",
+        "detail": "130 km/h"
+      }
+    },
+    {
+      "id": "end_speed_80",
+      "index": 15,
+      "group": "speed",
+      "color": "#7c3aed",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Hız sonu",
+        "detail": "80 bitti"
+      },
+      "en": {
+        "title": "End of limit",
+        "detail": "80 km/h"
+      }
+    },
+    {
+      "id": "end_all",
+      "index": 16,
+      "group": "speed",
+      "color": "#e11d48",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Kısıtlama sonu",
+        "detail": "Tümü bitti"
+      },
+      "en": {
+        "title": "End of restrictions",
+        "detail": "All"
+      }
+    },
+    {
+      "id": "stop",
+      "index": 17,
+      "group": "regulatory",
+      "color": "#dc2626",
+      "icon": {
+        "kind": "lucide",
+        "name": "Octagon"
+      },
+      "tr": {
+        "title": "Dur",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Stop",
+        "detail": "Required"
+      }
+    },
+    {
+      "id": "give_way",
+      "index": 18,
+      "group": "regulatory",
+      "color": "#d97706",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Yol ver",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Give Way",
+        "detail": "Required"
+      }
+    },
+    {
+      "id": "no_entry",
+      "index": 19,
+      "group": "regulatory",
+      "color": "#84cc16",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Girilmez",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Entry",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_vehicles",
+      "index": 20,
+      "group": "regulatory",
+      "color": "#10b981",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Taşıt giremez",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Vehicles",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_trucks",
+      "index": 21,
+      "group": "regulatory",
+      "color": "#14b8a6",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Kamyon yok",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Trucks",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_motorcycles",
+      "index": 22,
+      "group": "regulatory",
+      "color": "#06b6d4",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Motorsuz",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Motorcycles",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_bicycles",
+      "index": 23,
+      "group": "regulatory",
+      "color": "#3b82f6",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Bisiklet yok",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Bicycles",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_pedestrians",
+      "index": 24,
+      "group": "regulatory",
+      "color": "#6366f1",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Yaya giremez",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Pedestrians",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_left",
+      "index": 25,
+      "group": "regulatory",
+      "color": "#8b5cf6",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Sola yok",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Left Turn",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_right",
+      "index": 26,
+      "group": "regulatory",
+      "color": "#d946ef",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Sağa dönüş",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Right Turn",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_uturn",
+      "index": 27,
+      "group": "regulatory",
+      "color": "#f43f5e",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "U dönüş yok",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No U-turn",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_overtaking",
+      "index": 28,
+      "group": "regulatory",
+      "color": "#b45309",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Sollama yok",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Overtaking",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_overtaking_trucks",
+      "index": 29,
+      "group": "regulatory",
+      "color": "#0f766e",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Kamyon sollamaz",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No truck passing",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_parking",
+      "index": 30,
+      "group": "regulatory",
+      "color": "#1d4ed8",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Park yasak",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Parking",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "no_stopping",
+      "index": 31,
+      "group": "regulatory",
+      "color": "#7c3aed",
+      "icon": {
+        "kind": "lucide",
+        "name": "Ban"
+      },
+      "tr": {
+        "title": "Duraklama yok",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No Stopping",
+        "detail": "Prohibited"
+      }
+    },
+    {
+      "id": "max_weight",
+      "index": 32,
+      "group": "regulatory",
+      "color": "#e11d48",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Ağırlık",
+        "detail": "7,5 t"
+      },
+      "en": {
+        "title": "Weight limit",
+        "detail": "7.5 t"
+      }
+    },
+    {
+      "id": "max_height",
+      "index": 33,
+      "group": "regulatory",
+      "color": "#f97316",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Yükseklik",
+        "detail": "4,5 m"
+      },
+      "en": {
+        "title": "Height limit",
+        "detail": "4.5 m"
+      }
+    },
+    {
+      "id": "max_width",
+      "index": 34,
+      "group": "regulatory",
+      "color": "#eab308",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Genişlik",
+        "detail": "2,5 m"
+      },
+      "en": {
+        "title": "Width limit",
+        "detail": "2.5 m"
+      }
+    },
+    {
+      "id": "mandatory_straight",
+      "index": 35,
+      "group": "mandatory",
+      "color": "#84cc16",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Düz git",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Straight Ahead",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "mandatory_left",
+      "index": 36,
+      "group": "mandatory",
+      "color": "#10b981",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Sola dön",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Turn Left",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "mandatory_right",
+      "index": 37,
+      "group": "mandatory",
+      "color": "#14b8a6",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Sağa dön",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Turn Right",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "mandatory_straight_left",
+      "index": 38,
+      "group": "mandatory",
+      "color": "#06b6d4",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Düz veya sol",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Straight or left",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "mandatory_straight_right",
+      "index": 39,
+      "group": "mandatory",
+      "color": "#3b82f6",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Düz veya sağ",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Straight or right",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "keep_left",
+      "index": 40,
+      "group": "mandatory",
+      "color": "#6366f1",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Soldan geç",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Keep Left",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "keep_right",
+      "index": 41,
+      "group": "mandatory",
+      "color": "#8b5cf6",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Sağdan geç",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Keep Right",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "roundabout",
+      "index": 42,
+      "group": "mandatory",
+      "color": "#d946ef",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Ada etrafı",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Roundabout",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "bicycles_only",
+      "index": 43,
+      "group": "mandatory",
+      "color": "#f43f5e",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Bisiklet yolu",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Bicycles only",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "pedestrians_only",
+      "index": 44,
+      "group": "mandatory",
+      "color": "#b45309",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Yaya yolu",
+        "detail": "Zorunlu"
+      },
+      "en": {
+        "title": "Pedestrians only",
+        "detail": "Mandatory"
+      }
+    },
+    {
+      "id": "warn_curve_left",
+      "index": 45,
+      "group": "warning",
+      "color": "#0f766e",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Sola viraj",
+        "detail": "Tehlike"
+      },
+      "en": {
+        "title": "Curve left",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_curve_right",
+      "index": 46,
+      "group": "warning",
+      "color": "#1d4ed8",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Sağa viraj",
+        "detail": "Tehlike"
+      },
+      "en": {
+        "title": "Curve right",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_double_curve",
+      "index": 47,
+      "group": "warning",
+      "color": "#7c3aed",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Çift viraj",
+        "detail": "Tehlike"
+      },
+      "en": {
+        "title": "Double curve",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_children",
+      "index": 48,
+      "group": "warning",
+      "color": "#e11d48",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Okul geçidi",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Children",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_pedestrian",
+      "index": 49,
+      "group": "warning",
+      "color": "#f97316",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Yaya geçidi",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Pedestrians",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_slippery",
+      "index": 50,
+      "group": "warning",
+      "color": "#eab308",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Kaygan yol",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Slippery road",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_road_work",
+      "index": 51,
+      "group": "warning",
+      "color": "#84cc16",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Yol çalışması",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Road work",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_signal",
+      "index": 52,
+      "group": "warning",
+      "color": "#10b981",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Işıklı kavşak",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Signals ahead",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_animals",
+      "index": 53,
+      "group": "warning",
+      "color": "#14b8a6",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Vahşi hayvan",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Wild animals",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_narrow",
+      "index": 54,
+      "group": "warning",
+      "color": "#06b6d4",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Daralan yol",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Road narrows",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_uneven",
+      "index": 55,
+      "group": "warning",
+      "color": "#3b82f6",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Kasis",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Uneven road",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "warn_intersection",
+      "index": 56,
+      "group": "warning",
+      "color": "#6366f1",
+      "icon": {
+        "kind": "lucide",
+        "name": "TriangleAlert"
+      },
+      "tr": {
+        "title": "Kavşak",
+        "detail": "Dikkat"
+      },
+      "en": {
+        "title": "Intersection",
+        "detail": "Warning"
+      }
+    },
+    {
+      "id": "priority_road",
+      "index": 57,
+      "group": "priority",
+      "color": "#f59e0b",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Ana yol",
+        "detail": "Öncelik"
+      },
+      "en": {
+        "title": "Priority road",
+        "detail": "Priority"
+      }
+    },
+    {
+      "id": "end_priority",
+      "index": 58,
+      "group": "priority",
+      "color": "#a16207",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Ana yol bitti",
+        "detail": "Son"
+      },
+      "en": {
+        "title": "End of priority",
+        "detail": "End"
+      }
+    },
+    {
+      "id": "highway",
+      "index": 59,
+      "group": "info",
+      "color": "#15803d",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Otoyol",
+        "detail": "Başlangıç"
+      },
+      "en": {
+        "title": "Motorway",
+        "detail": "Start"
+      }
+    },
+    {
+      "id": "end_highway",
+      "index": 60,
+      "group": "info",
+      "color": "#166534",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Otoyol bitti",
+        "detail": "Son"
+      },
+      "en": {
+        "title": "End of motorway",
+        "detail": "End"
+      }
+    },
+    {
+      "id": "one_way_right",
+      "index": 61,
+      "group": "info",
+      "color": "#0f766e",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Tek yön",
+        "detail": "Sağ"
+      },
+      "en": {
+        "title": "One way",
+        "detail": "Right"
+      }
+    },
+    {
+      "id": "one_way_left",
+      "index": 62,
+      "group": "info",
+      "color": "#1d4ed8",
+      "icon": {
+        "kind": "lucide",
+        "name": "ArrowRight"
+      },
+      "tr": {
+        "title": "Tek yön",
+        "detail": "Sol"
+      },
+      "en": {
+        "title": "One way",
+        "detail": "Left"
+      }
+    },
+    {
+      "id": "parking",
+      "index": 63,
+      "group": "info",
+      "color": "#7c3aed",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Otopark",
+        "detail": "İzinli"
+      },
+      "en": {
+        "title": "Parking",
+        "detail": "Allowed"
+      }
+    },
+    {
+      "id": "other_sign",
+      "index": 64,
+      "group": "other",
+      "color": "#e11d48",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tag"
+      },
+      "tr": {
+        "title": "Levha",
+        "detail": "Sınıf dışı"
+      },
+      "en": {
+        "title": "Sign",
+        "detail": "Unclassified"
+      }
+    },
+    {
+      "id": "traffic_light_red",
+      "index": 65,
+      "group": "signal",
+      "color": "#ef4444",
+      "icon": {
+        "kind": "lucide",
+        "name": "Signal"
+      },
+      "tr": {
+        "title": "Kırmızı ışık",
+        "detail": "Dur"
+      },
+      "en": {
+        "title": "Red light",
+        "detail": "Stop"
+      }
+    },
+    {
+      "id": "traffic_light_yellow",
+      "index": 66,
+      "group": "signal",
+      "color": "#eab308",
+      "icon": {
+        "kind": "lucide",
+        "name": "Signal"
+      },
+      "tr": {
+        "title": "Sarı ışık",
+        "detail": "Hazır ol"
+      },
+      "en": {
+        "title": "Amber light",
+        "detail": "Wait"
+      }
+    },
+    {
+      "id": "traffic_light_green",
+      "index": 67,
+      "group": "signal",
+      "color": "#22c55e",
+      "icon": {
+        "kind": "lucide",
+        "name": "Signal"
+      },
+      "tr": {
+        "title": "Yeşil ışık",
+        "detail": "Geç"
+      },
+      "en": {
+        "title": "Green light",
+        "detail": "Go"
+      }
+    },
+    {
+      "id": "speed_limit_panel_multi",
+      "index": 68,
+      "group": "speed",
+      "color": "#10b981",
+      "icon": {
+        "kind": "lucide",
+        "name": "Gauge"
+      },
+      "tr": {
+        "title": "Çoklu hız panosu",
+        "detail": "Araç sütunları"
+      },
+      "en": {
+        "title": "Multi speed panel",
+        "detail": "Vehicle columns"
+      }
+    },
+    {
+      "id": "vehicle_car",
+      "index": 69,
+      "group": "vehicle",
+      "color": "#2563eb",
+      "icon": {
+        "kind": "lucide",
+        "name": "Car"
+      },
+      "tr": {
+        "title": "Otomobil",
+        "detail": "Simge"
+      },
+      "en": {
+        "title": "Car",
+        "detail": "Icon"
+      }
+    },
+    {
+      "id": "vehicle_panelvan",
+      "index": 70,
+      "group": "vehicle",
+      "color": "#0891b2",
+      "icon": {
+        "kind": "lucide",
+        "name": "CarFront"
+      },
+      "tr": {
+        "title": "Panelvan",
+        "detail": "Simge"
+      },
+      "en": {
+        "title": "Panel van",
+        "detail": "Icon"
+      }
+    },
+    {
+      "id": "vehicle_minibus",
+      "index": 71,
+      "group": "vehicle",
+      "color": "#7c3aed",
+      "icon": {
+        "kind": "lucide",
+        "name": "Bus"
+      },
+      "tr": {
+        "title": "Minibüs",
+        "detail": "Simge"
+      },
+      "en": {
+        "title": "Minibus",
+        "detail": "Icon"
+      }
+    },
+    {
+      "id": "vehicle_bus",
+      "index": 72,
+      "group": "vehicle",
+      "color": "#d97706",
+      "icon": {
+        "kind": "lucide",
+        "name": "BusFront"
+      },
+      "tr": {
+        "title": "Otobüs",
+        "detail": "Simge"
+      },
+      "en": {
+        "title": "Bus",
+        "detail": "Icon"
+      }
+    },
+    {
+      "id": "vehicle_pickup",
+      "index": 73,
+      "group": "vehicle",
+      "color": "#65a30d",
+      "icon": {
+        "kind": "lucide",
+        "name": "Truck"
+      },
+      "tr": {
+        "title": "Kamyonet",
+        "detail": "Simge"
+      },
+      "en": {
+        "title": "Pickup",
+        "detail": "Icon"
+      }
+    },
+    {
+      "id": "vehicle_truck",
+      "index": 74,
+      "group": "vehicle",
+      "color": "#dc2626",
+      "icon": {
+        "kind": "lucide",
+        "name": "Truck"
+      },
+      "tr": {
+        "title": "Kamyon",
+        "detail": "Simge"
+      },
+      "en": {
+        "title": "Truck",
+        "detail": "Icon"
+      }
+    },
+    {
+      "id": "vehicle_motorcycle",
+      "index": 75,
+      "group": "vehicle",
+      "color": "#db2777",
+      "icon": {
+        "kind": "lucide",
+        "name": "Bike"
+      },
+      "tr": {
+        "title": "Motosiklet",
+        "detail": "Simge"
+      },
+      "en": {
+        "title": "Motorcycle",
+        "detail": "Icon"
+      }
+    },
+    {
+      "id": "vehicle_tractor",
+      "index": 76,
+      "group": "vehicle",
+      "color": "#4d7c0f",
+      "icon": {
+        "kind": "lucide",
+        "name": "Tractor"
+      },
+      "tr": {
+        "title": "Traktör",
+        "detail": "Simge"
+      },
+      "en": {
+        "title": "Tractor",
+        "detail": "Icon"
+      }
+    },
+    {
+      "id": "warn_radar",
+      "index": 77,
+      "group": "warning",
+      "color": "#ca8a04",
+      "icon": {
+        "kind": "lucide",
+        "name": "Radar"
+      },
+      "tr": {
+        "title": "Radar uyarısı",
+        "detail": "Hız denetimi"
+      },
+      "en": {
+        "title": "Radar warning",
+        "detail": "Speed check"
+      }
+    },
+    {
+      "id": "no_horn",
+      "index": 78,
+      "group": "prohibitory",
+      "color": "#b91c1c",
+      "icon": {
+        "kind": "lucide",
+        "name": "VolumeX"
+      },
+      "tr": {
+        "title": "Korna yasak",
+        "detail": "Yasak"
+      },
+      "en": {
+        "title": "No horn",
+        "detail": "Prohibited"
+      }
+    }
+  ]
+}

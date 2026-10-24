@@ -1,0 +1,26 @@
+[project]
+name = "trainer-studio"
+version = "0.6.4.3"
+description = "Trainer Studio: local YOLO labeling, review and training."
+requires-python = ">=3.11"
+license = "AGPL-3.0-only"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = false
+warn_unused_ignores = false
+follow_imports = "silent"
+files = ["trainer_studio"]

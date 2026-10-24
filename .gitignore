@@ -1,0 +1,17 @@
+data/
+web/node_modules/
+web/.next/
+web/out/
+**/__pycache__/
+.venv/
+*.pyc
+src-tauri/target/
+src-tauri/gen/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+tools/private/
+**/tools/private/
+*.pem
+license.key

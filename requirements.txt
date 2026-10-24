@@ -1,0 +1,7 @@
+fastapi>=0.115
+uvicorn>=0.32
+python-multipart>=0.0.18
+opencv-python-headless>=4.10
+pillow>=10
+pyyaml>=6
+cryptography>=43

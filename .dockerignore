@@ -1,0 +1,12 @@
+web/node_modules
+web/.next
+web/out
+data
+.venv
+**/__pycache__
+src-tauri/target
+src-tauri/gen
+.git
+.pytest_cache
+.ruff_cache
+.mypy_cache

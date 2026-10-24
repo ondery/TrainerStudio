@@ -1,0 +1,4 @@
+# Optional. Install only when you want SAM, auto-label or training.
+# If CUDA PyTorch is already installed, install that first and then this file
+# so pip does not replace it with a CPU build.
+ultralytics>=8.3
