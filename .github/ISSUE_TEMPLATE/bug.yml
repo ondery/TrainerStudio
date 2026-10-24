@@ -5,12 +5,27 @@ body:
   - type: textarea
     attributes:
       label: What happened
-      description: What you did and what you expected. Do not paste datasets or license keys.
+      description: What you did and what you expected. Do not paste datasets, license keys, or session tokens.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps
+      description: Smallest way to see the bug again.
     validations:
       required: true
   - type: input
     attributes:
       label: Version
-      description: The build id from Settings or /api/health.
+      description: The version and build id from /api/health or Settings.
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
     validations:
       required: true

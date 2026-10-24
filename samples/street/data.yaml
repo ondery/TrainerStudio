@@ -1,0 +1,8 @@
+# Synthetic documentation dataset. Images are original drawings. See LICENSE.md.
+path: .
+train: images
+val: images
+names:
+  0: car
+  1: person
+  2: sign

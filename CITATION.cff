@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use Trainer Studio in a publication, please cite it with these metadata."
+title: "Trainer Studio"
+abstract: >-
+  Trainer Studio is an open-source, local-first tool for labeling YOLO
+  object-detection datasets. Bounding boxes, polygons, oriented boxes, and
+  pose are edited in a browser UI served by a FastAPI process on the same
+  computer. The open core is licensed under AGPL-3.0.
+authors:
+  - alias: ondery
+version: 0.6.4.3
+date-released: 2026-10-24
+license: AGPL-3.0
+repository-code: "https://github.com/ondery/TrainerStudio"
+url: "https://github.com/ondery/TrainerStudio"
+type: software
+keywords:
+  - YOLO
+  - image annotation
+  - object detection
+  - bounding box
+  - polygon
+  - dataset labeling

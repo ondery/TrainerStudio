@@ -1,9 +1,16 @@
 name: Feature
-description: A change to the core or an Enterprise idea
+description: A change you want in the open core
+labels: []
 body:
   - type: textarea
     attributes:
       label: Proposal
-      description: What the core should do, and whether it belongs in the AGPL core or in Enterprise.
+      description: What the open core should do, and who it helps. Do not paste datasets or license keys. Ideas for the commercial add-on can be described here too, without prices.
     validations:
       required: true
+  - type: textarea
+    attributes:
+      label: Alternatives
+      description: Other ways you solve this today, if any.
+    validations:
+      required: false

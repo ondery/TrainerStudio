@@ -60,25 +60,25 @@ function matchLocale(raw: string): LocaleCode | null {
 }
 
 export function detectLocale(): LocaleCode {
-  if (typeof window === "undefined") return "tr";
+  if (typeof window === "undefined") return "en";
   const saved = window.localStorage.getItem("trainer-studio.locale");
   if (saved) {
     const matched = matchLocale(saved);
     if (matched) return matched;
   }
-  return "tr";
+  return "en";
 }
 
 void i18n.use(ICU).use(initReactI18next).init({
   resources,
-  lng: "tr",
-  fallbackLng: "tr",
+  lng: "en",
+  fallbackLng: "en",
   interpolation: { escapeValue: false },
   returnNull: false,
 });
 
 export function applyLocale(code: string) {
-  const matched = matchLocale(code) || "tr";
+  const matched = matchLocale(code) || "en";
   window.localStorage.setItem("trainer-studio.locale", matched);
   document.documentElement.lang = matched;
   document.documentElement.dir = matched === "ar" ? "rtl" : "ltr";
