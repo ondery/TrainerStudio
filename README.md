@@ -86,16 +86,16 @@ A local training job and auto-label are in the open core, and both are partial. 
 
 The pictures below use the default dark theme and the CC0 photographs in `samples/street`. They are not a private dataset.
 
-| | |
-| --- | --- |
+|                                                                                                                                                                                |                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
 | ![Dark workbench showing a CC0 crosswalk photograph with person and car boxes, a sign polygon, the class bar, the explorer, and the navigator](docs/screenshots/workbench.png) | Main workbench. Class bar along the bottom, explorer on the left, navigator over the canvas. |
-| ![A selected polygon with vertex handles and guide lines on the canvas](docs/screenshots/selection.png) | Selection handles and guide lines. |
-| ![Class manager with the new-class dialog open](docs/screenshots/classes.png) | Class manager and the new-class dialog. |
-| ![Settings window on a local install](docs/screenshots/settings.png) | Settings. Language, guides, and the locked commercial section. |
-| ![A panel tab being dragged, with one soft dock highlight](docs/screenshots/dock.png) | Docking. One highlight follows the pointer. No drop grid. |
-| ![Monaco editor showing the YOLO label text for the current image](docs/screenshots/raw-data.png) | Raw data panel. |
-| ![Project explorer listing the sample images, labels, and data.yaml](docs/screenshots/explorer.png) | Project explorer and the dataset tree. |
-| ![Keyboard shortcut list](docs/screenshots/shortcuts.png) | Keyboard shortcuts. |
+| ![A selected polygon with vertex handles and guide lines on the canvas](docs/screenshots/selection.png)                                                                        | Selection handles and guide lines.                                                           |
+| ![Class manager with the new-class dialog open](docs/screenshots/classes.png)                                                                                                  | Class manager and the new-class dialog.                                                      |
+| ![Settings window on a local install](docs/screenshots/settings.png)                                                                                                           | Settings. Language, guides, and the locked commercial section.                               |
+| ![A panel tab being dragged, with one soft dock highlight](docs/screenshots/dock.png)                                                                                          | Docking. One highlight follows the pointer. No drop grid.                                    |
+| ![Monaco editor showing the YOLO label text for the current image](docs/screenshots/raw-data.png)                                                                              | Raw data panel.                                                                              |
+| ![Project explorer listing the sample images, labels, and data.yaml](docs/screenshots/explorer.png)                                                                            | Project explorer and the dataset tree.                                                       |
+| ![Keyboard shortcut list](docs/screenshots/shortcuts.png)                                                                                                                      | Keyboard shortcuts.                                                                          |
 
 ## Quick start
 
@@ -136,52 +136,52 @@ python -m pip install -r requirements-ai.txt
 
 On macOS, the Ctrl shortcuts below that are chords (Ctrl+Enter, Ctrl+K, and the rest of the `mod` bindings) use Command instead of Ctrl. Letter tools such as `V` and `B` stay the same. The list matches the bindings in the open core.
 
-| Shortcut | Action |
-| --- | --- |
-| `1`–`9`, `Q`–`P` | Choose a class |
-| `V` `B` `G` `O` `P` `M` `H` | Select, box, polygon, oriented box, pose, SAM, pan |
-| `C` | Copy annotations from the previous image |
-| Shift+`C` | Track toward the next frame |
-| Ctrl+Enter | Save and open the next image |
-| Shift+Enter | Next unlabeled image |
-| Enter | Confirm a polygon or a SAM prompt |
-| Backspace | Remove the last draft point, or delete |
-| Escape | Cancel the draft |
-| Delete | Delete the selection |
-| Tab / Shift+Tab | Cycle the selection |
-| `A` / `X` | Accept or reject a suggestion |
-| Alt+Backspace | Reject a pending box |
-| Ctrl+Shift+Enter | Accept a pending box without stepping |
-| Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y | Undo / redo |
-| Ctrl+A / Ctrl+D | Select all / duplicate |
-| `[` / `]` | Previous / next image |
-| Arrow keys | Nudge the selection, or change image when nothing is selected |
-| `F` | Fit the image |
-| Ctrl+`0` or Ctrl+`1` | Zoom to 100% |
-| Ctrl+`=` / Ctrl+`-` | Zoom in / out |
-| Ctrl+`2` | Zoom to 200% |
-| Shift+`2` | Zoom to the selection |
-| Space, or the middle mouse button | Pan |
-| Shift+click / Ctrl+click | Add to the selection / toggle a shape |
-| Alt+drag | Copy the shape |
-| Alt+click a vertex | Delete that vertex when the polygon has more than three |
-| Ctrl+`;` | Guide lines |
-| Ctrl+Shift+`;` | Crosshair cursor |
-| `\` | Skip this image |
-| F1 | Shortcut help |
-| F2 | Rename the file selected in the explorer |
-| F7 / F8 / Ctrl+Shift+G | Layers, navigator, filmstrip |
-| Ctrl+Shift+F | Float the layers panel |
-| Ctrl+Shift+V | Paste the selection onto the next image |
-| Ctrl+B | Collapse the side bar |
-| Ctrl+K | Command palette |
-| Ctrl+P | Quick open |
-| Ctrl+E | Export |
-| Ctrl+`,` | Settings |
-| Ctrl+`/` | This shortcut list |
-| Ctrl+H | History |
-| Ctrl+Q | Quality check |
-| Alt+`1`–Alt+`8` | Vehicle attributes on speed classes |
+| Shortcut                          | Action                                                        |
+| --------------------------------- | ------------------------------------------------------------- |
+| `1`–`9`, `Q`–`P`                  | Choose a class                                                |
+| `V` `B` `G` `O` `P` `M` `H`       | Select, box, polygon, oriented box, pose, SAM, pan            |
+| `C`                               | Copy annotations from the previous image                      |
+| Shift+`C`                         | Track toward the next frame                                   |
+| Ctrl+Enter                        | Save and open the next image                                  |
+| Shift+Enter                       | Next unlabeled image                                          |
+| Enter                             | Confirm a polygon or a SAM prompt                             |
+| Backspace                         | Remove the last draft point, or delete                        |
+| Escape                            | Cancel the draft                                              |
+| Delete                            | Delete the selection                                          |
+| Tab / Shift+Tab                   | Cycle the selection                                           |
+| `A` / `X`                         | Accept or reject a suggestion                                 |
+| Alt+Backspace                     | Reject a pending box                                          |
+| Ctrl+Shift+Enter                  | Accept a pending box without stepping                         |
+| Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y    | Undo / redo                                                   |
+| Ctrl+A / Ctrl+D                   | Select all / duplicate                                        |
+| `[` / `]`                         | Previous / next image                                         |
+| Arrow keys                        | Nudge the selection, or change image when nothing is selected |
+| `F`                               | Fit the image                                                 |
+| Ctrl+`0` or Ctrl+`1`              | Zoom to 100%                                                  |
+| Ctrl+`=` / Ctrl+`-`               | Zoom in / out                                                 |
+| Ctrl+`2`                          | Zoom to 200%                                                  |
+| Shift+`2`                         | Zoom to the selection                                         |
+| Space, or the middle mouse button | Pan                                                           |
+| Shift+click / Ctrl+click          | Add to the selection / toggle a shape                         |
+| Alt+drag                          | Copy the shape                                                |
+| Alt+click a vertex                | Delete that vertex when the polygon has more than three       |
+| Ctrl+`;`                          | Guide lines                                                   |
+| Ctrl+Shift+`;`                    | Crosshair cursor                                              |
+| `\`                               | Skip this image                                               |
+| F1                                | Shortcut help                                                 |
+| F2                                | Rename the file selected in the explorer                      |
+| F7 / F8 / Ctrl+Shift+G            | Layers, navigator, filmstrip                                  |
+| Ctrl+Shift+F                      | Float the layers panel                                        |
+| Ctrl+Shift+V                      | Paste the selection onto the next image                       |
+| Ctrl+B                            | Collapse the side bar                                         |
+| Ctrl+K                            | Command palette                                               |
+| Ctrl+P                            | Quick open                                                    |
+| Ctrl+E                            | Export                                                        |
+| Ctrl+`,`                          | Settings                                                      |
+| Ctrl+`/`                          | This shortcut list                                            |
+| Ctrl+H                            | History                                                       |
+| Ctrl+Q                            | Quality check                                                 |
+| Alt+`1`–Alt+`8`                   | Vehicle attributes on speed classes                           |
 
 ## Languages
 
@@ -228,35 +228,35 @@ The app database is not stored inside the dataset. It lives in the data director
 
 Figures below describe the public open core of Trainer Studio and the usual public offering of each other tool. Hosted products change, so the commercial column is only a pointer, not a review.
 
-| | Trainer Studio | LabelImg | CVAT | Label Studio | Roboflow Annotate |
-| --- | --- | --- | --- | --- | --- |
-| License of the tool you run | AGPL-3.0 | MIT | MIT | Apache-2.0 for the open-source server | Commercial hosted product |
-| Where it runs | Local Python process and a browser on the same machine | Desktop application | Self-hosted server, or CVAT's hosted service | Self-hosted server, or a cloud account | Cloud |
-| Account required to label | No | No | No on a server you run yourself | No on a server you run yourself | Yes |
-| Offline labeling | Yes, after the Python packages are installed | Yes | Yes on a private server you already installed | Yes on a private server you already installed | The hosted annotator needs a network connection |
-| Bounding boxes | Yes | Yes | Yes | Yes | Yes |
-| Polygons | Yes | The project draws rectangles | Yes | Yes | Yes |
-| YOLO files | Detect, segment, OBB, and pose text, plus `data.yaml` | Detection text, and also Pascal VOC and CreateML | YOLO is one of the export formats | YOLO is one of the documented export formats, with COCO and VOC | YOLO export from the hosted project |
-| Extra setup | A virtual environment and `pip install` | A Python/Qt install | A server install, often with Docker | A server install, or a cloud signup | An account on the hosted platform |
+|                             | Trainer Studio                                         | LabelImg                                         | CVAT                                          | Open labeling server                                            | Roboflow Annotate                               |
+| --------------------------- | ------------------------------------------------------ | ------------------------------------------------ | --------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------- |
+| License of the tool you run | AGPL-3.0                                               | MIT                                              | MIT                                           | Apache-2.0 for the open-source server                           | Commercial hosted product                       |
+| Where it runs               | Local Python process and a browser on the same machine | Desktop application                              | Self-hosted server, or CVAT's hosted service  | Self-hosted server, or a cloud account                          | Cloud                                           |
+| Account required to label   | No                                                     | No                                               | No on a server you run yourself               | No on a server you run yourself                                 | Yes                                             |
+| Offline labeling            | Yes, after the Python packages are installed           | Yes                                              | Yes on a private server you already installed | Yes on a private server you already installed                   | The hosted annotator needs a network connection |
+| Bounding boxes              | Yes                                                    | Yes                                              | Yes                                           | Yes                                                             | Yes                                             |
+| Polygons                    | Yes                                                    | The project draws rectangles                     | Yes                                           | Yes                                                             | Yes                                             |
+| YOLO files                  | Detect, segment, OBB, and pose text, plus `data.yaml`  | Detection text, and also Pascal VOC and CreateML | YOLO is one of the export formats             | YOLO is one of the documented export formats, with COCO and VOC | YOLO export from the hosted project             |
+| Extra setup                 | A virtual environment and `pip install`                | A Python/Qt install                              | A server install, often with Docker           | A server install, or a cloud signup                             | An account on the hosted platform               |
 
 ## Roadmap / Not yet implemented
 
 Version 0.6.4.3 is a pre-1.0 early preview. The feature matrix in `docs/feature-matrix.md` marks the 0.6.3 labeling surface as present. The items below are still missing, partial, or not in this preview. A later workbench revision is in progress and is not merged here.
 
-| Item | Status |
-| --- | --- |
-| Command list | Partial. Ctrl+K opens classes, languages, and a few tools. There is no shared command registry that plugins can extend. |
-| Keybinding service | Planned. Shortcuts are a fixed map plus the shortcut editor. When-clauses and conflict checks are not in this preview. |
-| One overlay stack for menus, popovers, and dialogs | Planned. Dialogs and menus work on their own. They are not one stack. |
-| Layout audit across window sizes and languages | Planned. This tree has no automated layout audit. |
-| Installable PWA | Planned. The interface is a static page served by the local API. It does not install as an app. |
-| Training and auto-label | Partial. One local job can run after the optional packages and weights are installed. `plugins/` ships empty, so there is no engine plugin to drop in. A GPU queue is not in the open core. |
-| SAM point prompts | Partial. The tool is in the interface and does nothing until the optional packages and a weight file are present. |
-| Export formats | YOLO, COCO JSON, and Pascal VOC XML are in the core. Other formats are not. |
-| Video and camera import | Not in this preview. Frame import stays locked with the commercial add-on. |
-| Team accounts, roles, review assignment | Not in this preview. They stay locked with the commercial add-on. |
-| macOS and Linux installers | Planned. Those systems start from a Python virtual environment. This tree has no macOS or Linux installer. |
-| Tagged 1.0 release and a Windows installer in this tree | Planned. Nothing here is a 1.0 release. This preview does not ship an installer. |
+| Item                                                    | Status                                                                                                                                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Command list                                            | Partial. Ctrl+K opens classes, languages, and a few tools. There is no shared command registry that plugins can extend.                                                                     |
+| Keybinding service                                      | Planned. Shortcuts are a fixed map plus the shortcut editor. When-clauses and conflict checks are not in this preview.                                                                      |
+| One overlay stack for menus, popovers, and dialogs      | Planned. Dialogs and menus work on their own. They are not one stack.                                                                                                                       |
+| Layout audit across window sizes and languages          | Planned. This tree has no automated layout audit.                                                                                                                                           |
+| Installable PWA                                         | Planned. The interface is a static page served by the local API. It does not install as an app.                                                                                             |
+| Training and auto-label                                 | Partial. One local job can run after the optional packages and weights are installed. `plugins/` ships empty, so there is no engine plugin to drop in. A GPU queue is not in the open core. |
+| SAM point prompts                                       | Partial. The tool is in the interface and does nothing until the optional packages and a weight file are present.                                                                           |
+| Export formats                                          | YOLO, COCO JSON, and Pascal VOC XML are in the core. Other formats are not.                                                                                                                 |
+| Video and camera import                                 | Not in this preview. Frame import stays locked with the commercial add-on.                                                                                                                  |
+| Team accounts, roles, review assignment                 | Not in this preview. They stay locked with the commercial add-on.                                                                                                                           |
+| macOS and Linux installers                              | Planned. Those systems start from a Python virtual environment. This tree has no macOS or Linux installer.                                                                                  |
+| Tagged 1.0 release and a Windows installer in this tree | Planned. Nothing here is a 1.0 release. This preview does not ship an installer.                                                                                                            |
 
 ## FAQ
 

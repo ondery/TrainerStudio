@@ -157,6 +157,12 @@ EN = {
     "format.segment": "Written: Ultralytics polygon cls x1 y1 x2 y2 …. Not written: RLE masks, COCO pixel polygons.",
     "format.obb": "Written: Ultralytics four corners (8 numbers). Not written by default: cx cy w h angle. If xywhr is read, the angle is radians.",
     "format.pose": "Written: Ultralytics box plus x y v, v 0/1/2. Not written: keypoints without visibility (dim 2). The box is stored as written. If it is missing, it is derived from the keypoints.",
+    "tasks.payload": "Task JSON must be a task list, and the labeling config must be XML.",
+    "tasks.noImage": "No matching image in this dataset. Remote files are not downloaded.",
+    "tasks.url": "That address is remote. The file was not downloaded.",
+    "tasks.unsupported": "That task has no local image. Text, audio and remote media stay out of this dataset.",
+    "tasks.noClass": "Class is not in data.yaml: {label}.",
+    "tasks.shape": "A {kind} region could not be read.",
 }
 
 

@@ -10,7 +10,7 @@ Trainer Studio is a YOLO labeling tool and an image annotation tool for object-d
 - [Key facts](https://github.com/ondery/TrainerStudio/blob/main/README.md#key-facts): license, platforms, stack, formats, languages, offline
 - [Quick start](https://github.com/ondery/TrainerStudio/blob/main/README.md#quick-start): Windows, macOS, and Linux commands
 - [Keyboard shortcuts](https://github.com/ondery/TrainerStudio/blob/main/README.md#keyboard-shortcuts): bindings that work in the open core
-- [Comparison](https://github.com/ondery/TrainerStudio/blob/main/README.md#comparison): LabelImg, CVAT, Label Studio, Roboflow Annotate
+- [Comparison](https://github.com/ondery/TrainerStudio/blob/main/README.md#comparison): LabelImg, CVAT, an open labeling server, Roboflow Annotate
 - [FAQ](https://github.com/ondery/TrainerStudio/blob/main/docs/FAQ.md): free, offline, formats, YOLO export, GPU, storage
 - [Open core and Enterprise](https://github.com/ondery/TrainerStudio/blob/main/README.md#open-core-and-enterprise): what is included and what stays locked
 - [How to cite](https://github.com/ondery/TrainerStudio/blob/main/README.md#how-to-cite): citation text and BibTeX

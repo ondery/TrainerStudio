@@ -14,7 +14,7 @@ The optional YOLO and SAM backends import Ultralytics, which is AGPL-3.0. Instal
 
 ## Enterprise
 
-`ee/` is source-available under [ee/LICENSE](ee/LICENSE), following the split used by GitLab, Cal.com, and Label Studio: one core license, a separate commercial license for the paid package. A missing, invalid, or expired key locks those routes. The core does not consult the key to open, label, save, or export.
+`ee/` is source-available under [ee/LICENSE](ee/LICENSE), following the split used by GitLab and Cal.com: one core license, a separate commercial license for the paid package. A missing, invalid, or expired key locks those routes. The core does not consult the key to open, label, save, or export.
 
 Keys are Ed25519. The public key is embedded. The signer that holds the private key lives outside this repository and must not be copied into a published tree.
 

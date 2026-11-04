@@ -101,6 +101,13 @@ CREATE TABLE IF NOT EXISTS kv (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS task_cache (
+  project_id TEXT NOT NULL,
+  image_id TEXT NOT NULL,
+  signature TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  PRIMARY KEY (project_id, image_id)
+);
 """
 
 

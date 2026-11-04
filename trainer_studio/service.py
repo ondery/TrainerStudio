@@ -19,6 +19,22 @@ from trainer_studio.importer import build_snapshot, file_token, now, scan_tree, 
 from trainer_studio.installpath import default_projects_dir, inside_install
 from trainer_studio.messages import text
 from trainer_studio.schema import clean_fields, fields_from_labeling, template_fields
+from trainer_studio.taskexchange import (
+    choose_annotation,
+    class_key,
+    control_results,
+    convert_results,
+    export_result,
+    geometry_fingerprint,
+    link_attributes,
+    match_image,
+    media_name,
+    merge_fields,
+    parse_config,
+    relations_from,
+    resolve_label,
+    split_payload,
+)
 from trainer_studio.writer import write_if_changed
 from trainer_studio.yamlids import index_for_key, lock_report, read_name_pairs
 from trainer_studio.yolo import FORMAT_NOTES, render_text, signature, validate_geometry
@@ -126,6 +142,7 @@ def _insert_snapshot(conn, project_id: str, snap: dict, keep_styles: dict | None
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             ann_rows,
         )
+    _restore_ls(conn, project_id)
 
 
 def open_dataset(path: str, task: str | None = None) -> dict:
@@ -1035,6 +1052,7 @@ def save_image(project_id: str, image_id: str, annotations: list[dict], attribut
                 (next_status, attr_json, label_rel if label_path.is_file() else row["label_rel"], digest, project_id, image_id),
             )
             _version(conn, project_id, image_id, "label_write", text("version.label"), {"written": touched, "bytesIdentical": not touched}, backup)
+            _remember_ls(conn, project_id, image_id, rendered)
             conn.commit()
             fresh = _image_row(conn, project_id, image_id)
             payload = _public_image(conn, fresh)
@@ -1645,6 +1663,437 @@ def settle_review(project_id: str, accept: list[str], reject: list[str]) -> dict
         saved = save_image(project_id, image_id, next_anns, attributes, status)
         images.append({"imageId": image_id, "written": saved["written"], "bytesIdentical": saved["bytesIdentical"]})
     return {"changed": changed, "images": images}
+
+
+def export_task_json(project_id: str, dest: str | None = None) -> dict:
+    """Write task JSON. Does not change the dataset."""
+    with transaction():
+        conn = connect()
+        try:
+            project = _project_row(conn, project_id)
+            root = Path(project["root"])
+            before = _label_bytes(root)
+            yaml_before = (root / "data.yaml").read_bytes() if (root / "data.yaml").is_file() else b""
+            images = _ls_images(conn, project_id)
+            fields = [json.loads(row["payload"]) for row in conn.execute("SELECT payload FROM fields WHERE project_id = ? ORDER BY sort_index", (project_id,))]
+            stored = conn.execute("SELECT value FROM kv WHERE key = ?", (f"xchg:{project_id}",)).fetchone()
+            names = json.loads(stored["value"]) if stored else {}
+            if not isinstance(names, dict):
+                names = {}
+            classes = {row["key"]: row["key"] for row in conn.execute("SELECT key FROM classes WHERE project_id = ?", (project_id,))}
+        finally:
+            conn.close()
+    tasks = []
+    regions = 0
+    for index, image in enumerate(images, start=1):
+        meta = image["meta"] if isinstance(image["meta"], dict) else {}
+        book = meta.get("xchg") if isinstance(meta.get("xchg"), dict) else {}
+        results = []
+        predictions: dict[str, list] = {}
+        for annotation in image["annotations"]:
+            attrs = annotation.get("attributes") if isinstance(annotation.get("attributes"), dict) else {}
+            if attrs.get("source") == "prediction" or attrs.get("review") == "pending":
+                version = "auto" if attrs.get("source") == "auto" else "prediction"
+                studio = attrs.get("xchg") if isinstance(attrs.get("xchg"), dict) else {}
+                if studio.get("modelVersion"):
+                    version = str(studio.get("modelVersion"))
+                predictions.setdefault(version, []).extend(export_result(annotation, image["width"], image["height"], classes))
+                predictions[version].extend(control_results(annotation["id"], attrs, fields, names))
+                continue
+            results.extend(export_result(annotation, image["width"], image["height"], classes))
+            results.extend(control_results(annotation["id"], attrs, fields, names))
+            regions += 1
+        results.extend(control_results(None, image["attributes"], fields, names))
+        results.extend(relations_from(image["annotations"], book.get("relations")))
+        for item in book.get("preserved") or []:
+            if isinstance(item, dict):
+                results.append(item)
+        for item in book.get("timeline") or []:
+            if isinstance(item, dict):
+                results.append(item)
+        data = dict(book.get("data") or {}) if isinstance(book.get("data"), dict) else {}
+        data.setdefault("image", image["name"])
+        primary = {"result": results, "ground_truth": bool(book.get("groundTruth"))}
+        extra = []
+        for copy in book.get("copies") or []:
+            if isinstance(copy, dict) and isinstance(copy.get("result"), list):
+                extra.append({"result": copy["result"], "ground_truth": bool(copy.get("ground_truth"))})
+        prediction_rows = []
+        for version, rows in predictions.items():
+            scores = [float(item["score"]) for item in rows if isinstance(item.get("score"), (int, float))]
+            prediction_rows.append({
+                "model_version": version,
+                "score": sum(scores) / len(scores) if scores else None,
+                "result": rows,
+            })
+        tasks.append({
+            "id": book.get("taskId") if book.get("taskId") is not None else index,
+            "data": data,
+            "meta": {
+                "image_id": image["id"],
+                "status": image["status"],
+                "split": image["split"],
+                "ground_truth": bool(book.get("groundTruth")),
+            },
+            "annotations": [primary, *extra],
+            "predictions": prediction_rows,
+        })
+    target = Path(dest).expanduser() if dest else data_dir() / "exports" / project_id / "tasks.json"
+    if target.is_dir():
+        target = target / "tasks.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(tasks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if _label_bytes(root) != before or ((root / "data.yaml").read_bytes() if (root / "data.yaml").is_file() else b"") != yaml_before:
+        raise StudioError(code="import.dirty")
+    return {"path": str(target), "tasks": len(tasks), "regions": regions, "bytesIdentical": True}
+
+
+def import_task_json(project_id: str, payload) -> dict:
+    """Read task JSON into the open dataset. Remote media is never downloaded."""
+    tasks, options, config_text = split_payload(payload)
+    config = parse_config(config_text) if config_text else {"labels": [], "fields": [], "suggestedTask": "detect"}
+    create_classes = options.get("createClasses") is True
+    with transaction():
+        conn = connect()
+        try:
+            project = _project_row(conn, project_id)
+            root = Path(project["root"])
+            pairs = _pairs(root) or []
+            names = [key for _index, key in pairs]
+            images = _ls_images(conn, project_id)
+            existing_fields = [json.loads(row["payload"]) for row in conn.execute("SELECT payload FROM fields WHERE project_id = ? ORDER BY sort_index", (project_id,))]
+        finally:
+            conn.close()
+    plans = []
+    skipped = []
+    warnings = []
+    needed: list[str] = []
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+        data = task.get("data") if isinstance(task.get("data"), dict) else {}
+        meta = task.get("meta") if isinstance(task.get("meta"), dict) else {}
+        image, code = match_image(data, meta, images)
+        if image is None:
+            _name, filename, _remote = media_name(data)
+            skipped.append({"image": filename or "?", "code": code, "reason": text(code), "params": {}})
+            continue
+        has_annotations = "annotations" in task
+        chosen, copies = choose_annotation(task.get("annotations") or []) if has_annotations else (None, [])
+        converted = convert_results((chosen or {}).get("result") or [], image["width"], image["height"]) if has_annotations else None
+        predictions = []
+        if "predictions" in task:
+            for prediction in task.get("predictions") or []:
+                if isinstance(prediction, dict):
+                    predictions.append((prediction, convert_results(prediction.get("result") or [], image["width"], image["height"])))
+        plans.append({
+            "task": task,
+            "image": image,
+            "hasAnnotations": has_annotations,
+            "chosen": chosen,
+            "copies": copies,
+            "converted": converted,
+            "predictions": predictions,
+        })
+        for annotation in (converted or {}).get("annotations") or []:
+            if not resolve_label(str(annotation.get("label") or ""), names):
+                needed.append(str(annotation.get("label") or ""))
+        for _prediction, body in predictions:
+            for annotation in body["annotations"]:
+                if not resolve_label(str(annotation.get("label") or ""), names):
+                    needed.append(str(annotation.get("label") or ""))
+    added: list[str] = []
+    if create_classes:
+        catalog = {item["value"]: item for item in config.get("labels") or []}
+        seen: set[str] = set()
+        for label in [*needed, *[item["value"] for item in config.get("labels") or []]]:
+            if not label or label in seen or resolve_label(label, names):
+                seen.add(label)
+                continue
+            seen.add(label)
+            key = class_key(label)
+            if not key or key in names or resolve_label(label, names):
+                continue
+            info = catalog.get(label) or {}
+            body = {"op": "add", "key": key, "title": label[:80], "titleEn": label[:80]}
+            if info.get("color"):
+                body["color"] = info["color"]
+            if info.get("hotkey"):
+                body["hotkey"] = info["hotkey"]
+            try:
+                class_apply(project_id, body)
+            except StudioError:
+                body.pop("hotkey", None)
+                try:
+                    class_apply(project_id, body)
+                except StudioError:
+                    continue
+            names.append(key)
+            added.append(key)
+    incoming_fields = list(config.get("fields") or [])
+    updated = 0
+    region_count = 0
+    prediction_count = 0
+    for plan in plans:
+        image = plan["image"]
+        converted = plan["converted"]
+        committed, failed = _ls_bind(list((converted or {}).get("annotations") or []), names)
+        replace = plan["hasAnnotations"]
+        if replace and converted and converted["shapes"] and not committed:
+            warnings.extend({"image": image["name"], **item} for item in failed)
+            skipped.append({"image": image["name"], "code": "tasks.noClass", "reason": text("tasks.noClass", label=failed[0]["params"].get("label", "") if failed else ""), "params": failed[0]["params"] if failed else {}})
+            replace = False
+        else:
+            warnings.extend({"image": image["name"], **item} for item in failed)
+        links = link_attributes((converted or {}).get("relations") or [])
+        for annotation in committed:
+            annotation["attributes"].update(links.get(annotation["id"]) or {})
+        used = {annotation["id"] for annotation in committed}
+        predicted = []
+        if "predictions" in plan["task"]:
+            for prediction, body in plan["predictions"]:
+                bound, failed_pred = _ls_bind(body["annotations"], names)
+                warnings.extend({"image": image["name"], **item} for item in failed_pred)
+                version = str(prediction.get("model_version") or "prediction")
+                for annotation in bound:
+                    _ls_prediction(annotation, used, version, prediction.get("score"))
+                    predicted.append(annotation)
+                    prediction_count += 1
+        else:
+            predicted = [item for item in image["annotations"] if (item.get("attributes") or {}).get("source") == "prediction"]
+        if replace:
+            rows = [*committed, *predicted]
+        else:
+            kept = [item for item in image["annotations"] if (item.get("attributes") or {}).get("source") != "prediction"]
+            rows = [*kept, *predicted]
+        attributes = dict(image["attributes"] or {})
+        if converted and replace:
+            attributes.update(converted["imageValues"])
+        if not replace and "predictions" not in plan["task"]:
+            continue
+        plan["applied"] = replace
+        save_image(project_id, image["id"], rows, attributes, None)
+        _ls_meta(project_id, image["id"], plan, converted)
+        updated += 1
+        region_count += len(committed)
+    for plan in plans:
+        converted = plan["converted"]
+        if converted:
+            incoming_fields.extend(converted["fields"])
+        for _prediction, body in plan["predictions"]:
+            incoming_fields.extend(body["fields"])
+    merged = merge_fields(existing_fields, incoming_fields)
+    if merged != existing_fields:
+        put_schema(project_id, merged)
+    mapping = {}
+    for field in merge_fields([], incoming_fields):
+        mapping[field["id"]] = field.get("label") or field["id"]
+    if mapping or config_text:
+        with transaction():
+            conn = connect()
+            try:
+                previous = conn.execute("SELECT value FROM kv WHERE key = ?", (f"xchg:{project_id}",)).fetchone()
+                current = json.loads(previous["value"]) if previous else {}
+                if not isinstance(current, dict):
+                    current = {}
+                current.update(mapping)
+                conn.execute("INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?)", (f"xchg:{project_id}", json.dumps(current, ensure_ascii=False)))
+                conn.commit()
+            finally:
+                conn.close()
+    return {
+        "updated": updated,
+        "skipped": skipped,
+        "warnings": warnings,
+        "regions": region_count,
+        "predictions": prediction_count,
+        "classesAdded": added,
+        "fields": len(merged),
+        "suggestedTask": config.get("suggestedTask") or "detect",
+    }
+
+
+def _ls_images(conn, project_id: str) -> list[dict]:
+    images = []
+    for row in conn.execute("SELECT * FROM images WHERE project_id = ? ORDER BY sort_index, name", (project_id,)):
+        images.append({
+            "id": row["id"],
+            "name": row["name"],
+            "rel": row["rel_path"],
+            "width": int(row["width"]),
+            "height": int(row["height"]),
+            "status": row["status"],
+            "split": row["split"],
+            "attributes": json.loads(row["attributes"] or "{}"),
+            "meta": json.loads(row["meta"] or "{}"),
+            "annotations": _annotations(conn, project_id, row["id"]),
+        })
+    return images
+
+
+def _ls_bind(annotations: list[dict], names: list[str]) -> tuple[list[dict], list[dict]]:
+    kept = []
+    failed = []
+    for annotation in annotations:
+        label = str(annotation.get("label") or "")
+        key = resolve_label(label, names)
+        if not key:
+            failed.append({"code": "tasks.noClass", "reason": text("tasks.noClass", label=label or "?"), "params": {"label": label or "?"}})
+            continue
+        book = annotation.get("attributes", {}).get("xchg")
+        if isinstance(book, dict):
+            book["classKey"] = key
+            book["fingerprint"] = geometry_fingerprint(annotation.get("geometry") or {})
+        kept.append({
+            "id": annotation.get("id"),
+            "classId": key,
+            "geometry": annotation.get("geometry"),
+            "attributes": annotation.get("attributes") or {},
+        })
+    return kept, failed
+
+
+def _ls_prediction(annotation: dict, used: set[str], version: str, score) -> None:
+    raw = str(annotation.get("id") or "")
+    if not raw.startswith("pred"):
+        raw = ("pred" + raw)[:80]
+    if not re.fullmatch(r"[A-Za-z0-9_.:-]{1,80}", raw) or raw in used:
+        raw = uuid.uuid4().hex
+    while raw in used:
+        raw = uuid.uuid4().hex
+    used.add(raw)
+    annotation["id"] = raw
+    attrs = annotation.setdefault("attributes", {})
+    attrs["review"] = "pending"
+    attrs["source"] = "prediction"
+    book = attrs.get("xchg")
+    if not isinstance(book, dict):
+        book = {}
+        attrs["xchg"] = book
+    book["modelVersion"] = version
+    if score is not None and "score" not in attrs:
+        try:
+            attrs["score"] = float(score)
+        except (TypeError, ValueError):
+            pass
+
+
+def _ls_meta(project_id: str, image_id: str, plan: dict, converted: dict | None) -> None:
+    with transaction():
+        conn = connect()
+        try:
+            row = _image_row(conn, project_id, image_id)
+            meta = json.loads(row["meta"] or "{}")
+            if not isinstance(meta, dict):
+                meta = {}
+            current = meta.get("xchg") if isinstance(meta.get("xchg"), dict) else {}
+            task = plan["task"]
+            if plan.get("applied") and converted is not None:
+                data = task.get("data") if isinstance(task.get("data"), dict) else {}
+                small = {}
+                for key, value in data.items():
+                    if isinstance(value, (str, int, float, bool)) and len(str(value)) <= 2000:
+                        small[key] = value
+                copies = []
+                for copy in plan["copies"]:
+                    if isinstance(copy, dict) and isinstance(copy.get("result"), list):
+                        copies.append({
+                            "ground_truth": bool(copy.get("ground_truth")),
+                            "result": copy.get("result"),
+                            "created_at": copy.get("created_at"),
+                            "updated_at": copy.get("updated_at"),
+                        })
+                current.update({
+                    "taskId": task.get("id"),
+                    "data": small,
+                    "relations": converted.get("relations") or [],
+                    "preserved": converted.get("preserved") or [],
+                    "timeline": converted.get("timeline") or [],
+                    "copies": copies[:20],
+                    "groundTruth": bool(plan["chosen"] and plan["chosen"].get("ground_truth")),
+                })
+            meta["xchg"] = current
+            conn.execute("UPDATE images SET meta = ? WHERE project_id = ? AND id = ?", (json.dumps(meta, ensure_ascii=False), project_id, image_id))
+            _remember_ls(conn, project_id, image_id, None)
+            conn.commit()
+        finally:
+            conn.close()
+
+
+def _remember_ls(conn, project_id: str, image_id: str, rendered: str | None) -> None:
+    """Keep brush, ellipse, vector and relations across a later reopen.
+
+    The label file stays the training text. This cache is used only when that
+    text still has the same numbers.
+    """
+    row = _image_row(conn, project_id, image_id)
+    annotations = _annotations(conn, project_id, image_id)
+    meta = json.loads(row["meta"] or "{}")
+    attributes = json.loads(row["attributes"] or "{}")
+    rich = isinstance(meta, dict) and isinstance(meta.get("xchg"), dict)
+    if not rich:
+        rich = any(isinstance((item.get("attributes") or {}).get("xchg"), dict) for item in annotations)
+    found = conn.execute("SELECT image_id FROM task_cache WHERE project_id = ? AND image_id = ?", (project_id, image_id)).fetchone()
+    if not rich and found is None:
+        return
+    if rendered is None:
+        root = Path(_project_row(conn, project_id)["root"])
+        path = root / (row["label_rel"] or f"labels/{row['stem']}.txt")
+        rendered = path.read_text(encoding="utf-8") if path.is_file() else ""
+    current = signature(rendered)
+    if current is None:
+        return
+    payload = {"annotations": annotations, "attributes": attributes, "meta": meta if isinstance(meta, dict) else {}}
+    conn.execute(
+        "INSERT OR REPLACE INTO task_cache (project_id, image_id, signature, payload) VALUES (?, ?, ?, ?)",
+        (project_id, image_id, json.dumps(current), json.dumps(payload, ensure_ascii=False)),
+    )
+
+
+def _restore_ls(conn, project_id: str) -> None:
+    cached = conn.execute("SELECT image_id, signature, payload FROM task_cache WHERE project_id = ?", (project_id,)).fetchall()
+    if not cached:
+        return
+    root = Path(_project_row(conn, project_id)["root"])
+    for item in cached:
+        image = conn.execute("SELECT * FROM images WHERE project_id = ? AND id = ?", (project_id, item["image_id"])).fetchone()
+        if image is None:
+            continue
+        path = root / (image["label_rel"] or f"labels/{image['stem']}.txt")
+        rendered = path.read_text(encoding="utf-8") if path.is_file() else ""
+        current = signature(rendered)
+        if current is None or json.dumps(current) != item["signature"]:
+            continue
+        payload = json.loads(item["payload"])
+        conn.execute("DELETE FROM annotations WHERE project_id = ? AND image_id = ?", (project_id, image["id"]))
+        for ordinal, ann in enumerate(payload.get("annotations") or []):
+            if not isinstance(ann, dict):
+                continue
+            conn.execute(
+                """INSERT INTO annotations (id, project_id, image_id, class_key, geometry, attributes, created_at, updated_at, ordinal)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    ann.get("id"), project_id, image["id"], ann.get("classId") or "",
+                    json.dumps(ann.get("geometry") or {}), json.dumps(ann.get("attributes") or {}, ensure_ascii=False),
+                    ann.get("createdAt") or now(), ann.get("updatedAt") or now(), ordinal,
+                ),
+            )
+        attributes = json.loads(image["attributes"] or "{}")
+        stored_attributes = payload.get("attributes") if isinstance(payload.get("attributes"), dict) else {}
+        if isinstance(attributes, dict):
+            attributes.update(stored_attributes)
+        else:
+            attributes = stored_attributes
+        meta = json.loads(image["meta"] or "{}")
+        stored_meta = payload.get("meta") if isinstance(payload.get("meta"), dict) else {}
+        if not isinstance(meta, dict):
+            meta = {}
+        if isinstance(stored_meta.get("xchg"), dict):
+            meta["xchg"] = stored_meta["xchg"]
+        conn.execute(
+            "UPDATE images SET attributes = ?, meta = ? WHERE project_id = ? AND id = ?",
+            (json.dumps(attributes, ensure_ascii=False), json.dumps(meta, ensure_ascii=False), project_id, image["id"]),
+        )
 
 
 def mark_review(project_id: str, image_ids: list[str]) -> dict:

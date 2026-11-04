@@ -251,6 +251,22 @@ def create_app() -> FastAPI:
         source = image_file(project_id, image_id)
         return FileResponse(thumb_path(project_id, image_id, source))
 
+    @app.post("/api/projects/{project_id}/exchange/tasks")
+    def task_json_export(project_id: str, body: dict | None = None):
+        from trainer_studio.service import export_task_json
+
+        payload = body or {}
+        dest = str(payload.get("dest") or "") or None
+        return export_task_json(project_id, dest)
+
+    @app.post("/api/projects/{project_id}/exchange/tasks/import")
+    async def task_json_import(project_id: str, request: Request):
+        from trainer_studio.service import import_task_json
+
+        raw = await request.body()
+        payload = json.loads(raw) if raw else None
+        return import_task_json(project_id, payload)
+
     @app.post("/api/projects/{project_id}/export")
     def export(project_id: str, body: dict):
         precision = int(body.get("precision") or 6)
