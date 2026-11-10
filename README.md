@@ -125,6 +125,16 @@ python -m pip install -r requirements.txt
 python -m trainer_studio
 ```
 
+### Docker
+
+The published image is the open core. It listens on port 43150. Mount the dataset folder at `/data`. The app database stays in the container volume, not in the dataset.
+
+```bash
+docker run --rm -p 43150:43150 -v /path/to/dataset:/data ghcr.io/ondery/trainerstudio:0.6.4.3
+```
+
+Then open `http://127.0.0.1:43150`. On Windows, use a drive path such as `C:\labels\dataset` after the `-v`.
+
 ### Optional AI packages
 
 SAM, auto-label, and local training need extra packages. If you already have a CUDA build of PyTorch, install that first so pip does not replace it.

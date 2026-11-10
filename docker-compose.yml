@@ -1,7 +1,7 @@
 services:
   trainer-studio:
     build: .
-    image: ghcr.io/owner/trainer-studio:local
+    image: ghcr.io/ondery/trainerstudio:0.6.4.3
     ports:
       - "43150:43150"
     environment:

@@ -14,10 +14,9 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY trainer_studio ./trainer_studio
-COPY ee ./ee
 COPY plugins ./plugins
 COPY --from=web /src/web/out ./static
-COPY LICENSE README.md README.tr.md LICENSING.md CHANGELOG.md build.json* ./
+COPY LICENSE README.md LICENSING.md CHANGELOG.md ./
 ENV STUDIO_HOST=0.0.0.0 \
     STUDIO_PORT=43150 \
     STUDIO_DATA=/var/lib/trainer-studio \
