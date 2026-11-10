@@ -24,7 +24,8 @@ jobs:
       - name: Test
         run: |
           python -m pip install -r requirements-dev.txt
-          python -m ruff check trainer_studio ee tests scripts
+          python -m ruff check trainer_studio tests scripts
+          if [ -d ee ]; then python -m ruff check ee; fi
           python -m pytest -q
           python scripts/check_public_tree.py
       - name: Static UI

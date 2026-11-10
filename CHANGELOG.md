@@ -12,6 +12,7 @@ First public preview of the Trainer Studio open core.
 - Project explorer, navigator, class manager, and a Monaco raw-data panel
 - English is the default language when none has been saved. Twelve languages remain available
 - YOLO, COCO, and Pascal VOC export. Class indexes stay the order in `data.yaml`
+- Task JSON import and export from the File menu. Percent coordinates become boxes, polygons, rotated rectangles, and keypoints. Predictions stay in review until accepted. Remote files are not downloaded
 - Optional local SAM, auto-label, and training are partial. They need extra packages and weights. A GPU is not required to label
 - The documentation sample is seven CC0 street photographs. Outlines are polygons: rectangles, plus a sign and a bicycle. See `samples/street/LICENSE.md`
 - Commercial team features and video import stay locked. They are not included in this repository

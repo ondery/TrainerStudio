@@ -40,7 +40,7 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - **License:** GNU Affero General Public License v3.0 (AGPL-3.0). See [LICENSE](LICENSE)
 - **Platforms:** Windows, macOS, and Linux
 - **Stack:** Next.js static UI, FastAPI, SQLite
-- **Formats:** YOLO detect, segment, oriented boxes (OBB), and pose (`data.yaml` plus label text). Export can also write COCO JSON and Pascal VOC XML
+- **Formats:** YOLO detect, segment, oriented boxes (OBB), and pose (`data.yaml` plus label text). Export can also write COCO JSON, Pascal VOC XML, and task JSON
 - **Tools:** bounding boxes, polygons, vertex handles, guide lines, class hotkeys, save and next
 - **Languages:** 12. A fresh install uses English until you choose another language
 - **Offline:** yes. Labeling does not need a network, an account, or a GPU
@@ -71,6 +71,7 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - Class ids and their order come from `data.yaml` and are not renumbered on open
 - Class names, colors, and hotkeys are edited in the class manager. Removing or merging classes asks for confirmation
 - Import is the YOLO text you already have. Export writes a copy as YOLO, COCO, or Pascal VOC and does not overwrite the source dataset
+- Task JSON is a separate exchange. File → Import tasks reads a task list, and File → Export → Task JSON writes one. Coordinates in that file are percentages of the image. Rectangles, polygons, rotated rectangles, and keypoints become the shapes this app edits. Brush, ellipse, and open vector regions keep their original values until you edit them, then they export as polygons. Predictions stay in review and are not written to `labels/` until you accept them. A remote address is not downloaded. A class name that is not in `data.yaml` is skipped unless you choose to add the missing classes
 - A small CC0 photograph sample lives in [`samples/street`](samples/street/LICENSE.md). Class names in that sample are car, person, bicycle, sign, light, bus, and truck
 
 ### Training
