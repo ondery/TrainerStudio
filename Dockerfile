@@ -17,6 +17,8 @@ COPY trainer_studio ./trainer_studio
 COPY plugins ./plugins
 COPY --from=web /src/web/out ./static
 COPY LICENSE README.md LICENSING.md CHANGELOG.md ./
+LABEL org.opencontainers.image.source="https://github.com/ondery/TrainerStudio" \
+      org.opencontainers.image.licenses="AGPL-3.0"
 ENV STUDIO_HOST=0.0.0.0 \
     STUDIO_PORT=43150 \
     STUDIO_DATA=/var/lib/trainer-studio \
