@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { cursorFor, hitBox } from "./lib/hit.ts";
 import { blendBox } from "./lib/track.ts";
 import { linkPair } from "./lib/link.ts";
-import { DEFAULT_SHORTCUTS, matchAction, type ShortcutAction } from "./lib/shortcuts.ts";
+import { DEFAULT_SHORTCUT_CONTEXT, DEFAULT_SHORTCUTS, bindingConflicts, matchAction, scopesOverlap, type ShortcutAction } from "./lib/shortcuts.ts";
 import { depthOf, movePanel, normalize, panelsIn, placeNode, preset, tabsNode, type FloatWin } from "./lib/grid.ts";
 import { drawClassId } from "./lib/draw-class.ts";
 import { openFrame } from "./lib/zoom-frame.ts";
@@ -101,6 +101,24 @@ assert.equal(press("+", { ctrlKey: true, shiftKey: true }), "zoomIn");
 assert.equal(press("1", { ctrlKey: true }), "zoom100");
 assert.equal(press("p", { ctrlKey: true, shiftKey: true }), "palette");
 assert.equal(press("F2"), null);
+assert.equal(press("1"), "class.1");
+assert.equal(
+  matchAction({ key: "1", metaKey: false, ctrlKey: false, altKey: false, shiftKey: false } as KeyboardEvent, DEFAULT_SHORTCUTS, {
+    ...DEFAULT_SHORTCUT_CONTEXT,
+    dialog: "settings",
+  }),
+  null,
+);
+assert.equal(
+  matchAction({ key: "z", metaKey: false, ctrlKey: true, altKey: false, shiftKey: false } as KeyboardEvent, DEFAULT_SHORTCUTS, {
+    ...DEFAULT_SHORTCUT_CONTEXT,
+    tag: "INPUT",
+  }),
+  null,
+);
+assert.equal(scopesOverlap("nav", "vehicle"), false);
+assert.equal(bindingConflicts(DEFAULT_SHORTCUTS, "class.19", "p"), true);
+assert.equal(bindingConflicts(DEFAULT_SHORTCUTS, "class.19", "mod+z"), true);
 
 const app = readFileSync(new URL("../../trainer/web/src/App.tsx", import.meta.url), "utf8");
 const explorerLegacy = readFileSync(new URL("../../trainer/web/src/explorer.tsx", import.meta.url), "utf8");

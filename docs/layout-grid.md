@@ -1,41 +1,44 @@
 # Layout grid
 
-Trainer Studio is laid out on a CSS grid. The shell and the workspace are separate templates. Both are stored with the layout under `trainer-studio.layout` and can be edited from Settings → Layout or by importing that JSON. The spacing base is 8px. Track sizes, gaps, and floating windows snap to that module.
+Trainer Studio is laid out on a CSS grid. The shell and the workspace dock are separate. Shell templates are stored with the layout under `trainer-studio.layout`. The spacing base is 8px.
 
 ## Shell
 
-The application shell is one grid. Its areas are named `menu`, `toolbar`, `palette`, `workspace`, and `status`. `grid-template-areas` and the column and row tracks come from the active breakpoint. Resizing the window selects the template. The four breakpoints are 1366, 1920, 2560, and 3354.
+The live shell areas are `menu`, `palette`, `workspace`, and `status`. There is no `toolbar` grid area. The menu cell holds the menu bar, the optional ribbon, and the lock line. `palette` is the activity bar. `workspace` is the dock. `status` is the status bar.
 
-| Width | Areas | What changes |
+Resizing the window selects one of four breakpoints: 1366, 1920, 2560, and 3354. Widths below 1920 stay on 1366.
+
+| Width | Columns | What changes |
 | --- | --- | --- |
-| 1366 | menu, palette, workspace, status | The toolbar shares the menu row. The menu row is at least 72px. |
-| 1920 | menu, toolbar, palette, workspace, status | The toolbar is its own row. Palette track is 40px. |
-| 2560 | the same names, three columns | Palette track is 48px. The workspace spans two columns. |
-| 3354 | the same names, four columns | Menu, toolbar, and status tracks grow by 8px. The workspace spans three columns. |
+| 1366 and 1920 | palette, then the rest | Menu, workspace, and status span the two columns. |
+| 2560 | three columns | The workspace spans two columns. The palette track is 8px wider. |
+| 3354 | four columns | The workspace spans three columns. The status track grows by 8px. |
 
-`menu` holds the menu bar. `toolbar` holds the options bar. `palette` holds the tool buttons. `workspace` holds the dock. `status` holds the status bar. A lock notice sits in the toolbar row, or in the menu row when the breakpoint has no toolbar area.
+`tracks.menu` and `tracks.toolbar` are stored. `buildTemplates` does not read them. Settings hides the toolbar field.
 
 ## Workspace
 
-Inside `workspace`, a second grid has 12 equal columns and 12 equal rows. Docked zones occupy rectangular areas:
+The dock inside `workspace` is a pixel grid, not the 12 by 12 track model:
 
-- `left` is the start edge. In Arabic it is placed on the right.
-- `canvas` is the remaining cells beside the side zones.
-- `right` is the end edge.
-- `bottom` is a full-width band under the canvas.
+```
+"left canvas right"
+"bottom bottom bottom"
+```
 
-A zone’s span is how many tracks it occupies. Dragging its edge changes that span for the current breakpoint and writes it back into `layout.spans`. An empty zone uses no tracks, so the canvas grows into them. A collapsed zone keeps a single track for its tab strip.
+`left`, `right`, and `bottom` sizes come from the saved band size in pixels, clamped to the viewport. `layout.spans` is stored per breakpoint and is not read by the dock.
 
-Floating panels are items on this same 12 by 12 grid. Their `col`, `row`, `colSpan`, and `rowSpan` are the position and size. Dragging snaps to the nearest track. The stored `x`, `y`, `w`, and `h` values are the same rectangle measured in 8px modules.
+`workspaceAreas(left, right, bottom, rtl)` still builds a 12 by 12 description. With `rtl` true, `right` is on the start side. The live dock does not call it. Arabic sets `dir=rtl` on the document, and CSS grid flips the first column to the start edge.
 
-Named presets are Default, Labeling, Review, and Training. Each preset stores the shell templates, the track sizes (`palette`, `menu`, `toolbar`, `status`), the spans for every breakpoint, and which panels sit in which zone. Save writes the current definition. Reset restores Default.
+Named presets are Default, Labeling, Review, and Training. Save writes the current definition. Reset restores Default.
 
 ## Forms
 
-Settings, property editors, class rows, the options bar, and dialog bodies use the shared 12-column grid (`Grid` and `GridItem`). A label takes 4 columns and its control takes 8. The gap is 8px, so controls line up across those surfaces.
+Settings, property editors, class rows, and dialog bodies use the shared 12-column grid (`Grid` and `GridItem`). A label takes 4 columns and its control takes 8. The gap is 8px.
 
 ## Layout guide
 
-View → Show layout grid draws a dashed outline on each shell area and on each workspace zone. It is off by default and does not follow the pointer. It is not drawn while a panel is dragged. The control is `showGrid` in `trainer-studio.appearance`.
+View → Show layout grid draws a dashed outline on each shell area and a 12 by 12 guide on the dock. It is off by default. The control is `showGrid` in `trainer-studio.appearance`.
 
-![Shell areas with the layout grid guide on](images/layout-grid-guide.png)
+## Audit
+
+`scripts/check_layout.mjs` checks breakpoints, presets, and the RTL `workspaceAreas` helper. `scripts/layout-audit.spec.mjs` opens the running app at 1280, 1366, 1920, 2560, and 3354 for English, Turkish, German, Japanese, and Arabic. It fails on horizontal overflow, a wrong breakpoint, a toolbar area, or a missing shell area. Arabic must set `dir=rtl`.

@@ -55,8 +55,8 @@ def main() -> None:
     print("public tree ok")
     print("docker build -f Dockerfile -t trainer-studio:cpu .")
     print("docker build -f Dockerfile.cuda -t trainer-studio:cuda .")
-    print("git tag v0.6.4.3")
-    print("git push origin v0.6.4.3")
+    print("git tag v1.0.0")
+    print("git push origin v1.0.0")
     print("Those tag and image commands are not run by this script.")
 
 

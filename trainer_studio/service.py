@@ -834,7 +834,7 @@ def list_images(project_id: str) -> list[dict]:
                 (project_id,),
             ):
                 class_ids.setdefault(link["image_id"], set()).add(link["class_key"])
-            return [
+            listed = [
                 {
                     "id": row["id"],
                     "name": row["name"],
@@ -849,6 +849,13 @@ def list_images(project_id: str) -> list[dict]:
                 }
                 for row in rows
             ]
+            from trainer_studio.enterprise import assigned_images
+
+            allowed = assigned_images(project_id)
+            if allowed is None:
+                return listed
+            wanted = set(allowed)
+            return [row for row in listed if row["id"] in wanted]
         finally:
             conn.close()
 
@@ -1622,6 +1629,10 @@ def list_versions(project_id: str) -> dict:
 
 
 def settle_review(project_id: str, accept: list[str], reject: list[str]) -> dict:
+    from trainer_studio.enterprise import may_settle
+
+    if not may_settle():
+        raise StudioError(code="rbac.denied", status=403)
     accept_set = {str(item) for item in accept}
     reject_set = {str(item) for item in reject}
     if not accept_set and not reject_set:

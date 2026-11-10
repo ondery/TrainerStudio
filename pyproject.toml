@@ -1,6 +1,6 @@
 [project]
 name = "trainer-studio"
-version = "0.6.4.3"
+version = "1.0.0"
 description = "Trainer Studio: local YOLO labeling, review and training."
 requires-python = ">=3.11"
 license = "AGPL-3.0-only"

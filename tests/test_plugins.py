@@ -33,3 +33,26 @@ def test_plugin_discovery_and_route(tmp_path, data_home, monkeypatch):
     assert rows["sample"]["panels"][0]["title"] == "Sample"
     assert HOST.file("sample", "ui.js").is_file()
     assert any(route["path"] == "/api/plugins/ext/sample/ping" for route in HOST.routes())
+
+
+def test_boxfile_engine_registers_detector_and_job():
+    from trainer_studio.detectors.base import get
+    from trainer_studio.jobs import runner
+
+    HOST.discover()
+    detector = get("boxfile")
+    assert detector is not None
+    assert detector.predict("missing.jpg", {}, ["object"]) == []
+    assert runner("boxfile.echo") is not None
+    rows = {row["id"]: row for row in HOST.public()}
+    assert rows["boxfile"]["jobs"][0]["kind"] == "boxfile.echo"
+
+
+def test_example_plugin_command_is_public():
+    HOST.discover()
+    rows = {row["id"]: row for row in HOST.public()}
+    command = rows["example"]["commands"][0]
+    assert command["id"] == "example.run"
+    assert command["path"] == "/api/plugins/ext/example/run"
+    assert rows["example"]["menus"][0]["title"] == "Example"
+    assert any(route["path"] == "/api/plugins/ext/example/run" for route in HOST.routes())

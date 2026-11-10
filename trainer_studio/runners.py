@@ -104,11 +104,21 @@ def autolabel(payload: dict, progress, cancel) -> dict:
             raise StudioError(code="detect.unavailable", status=424) from exc
         proposals, missed = proposals_from_detections(boxes, names)
         skipped += missed
+        review = payload.get("review", True)
+        if review is False or review == "accepted":
+            for proposal in proposals:
+                attributes = dict(proposal.get("attributes") or {})
+                attributes.pop("review", None)
+                proposal["attributes"] = attributes
         current = get_image(project_id, image["id"])["annotations"]
-        kept = [ann for ann in current if (ann.get("attributes") or {}).get("review") != "pending"]
-        if proposals:
+        if payload.get("append", True) is False:
+            kept = []
+        else:
+            kept = [ann for ann in current if (ann.get("attributes") or {}).get("review") != "pending"]
+        if proposals or payload.get("append", True) is False:
             save_image(project_id, image["id"], kept + proposals, None, "review")
-            written += 1
+            if proposals:
+                written += 1
     progress(1, "@train.proposals")
     return {
         "images": written,
@@ -137,6 +147,8 @@ def _metrics(trainer) -> dict:
 
 
 def train(payload: dict, progress, cancel) -> dict:
+    if str(payload.get("backend") or "ultralytics") == "rtdetr":
+        return train_rtdetr(payload, progress, cancel)
     try:
         from ultralytics import YOLO
     except Exception as exc:
@@ -190,7 +202,85 @@ def train(payload: dict, progress, cancel) -> dict:
     best_text = str(best) if best.is_file() else ""
     if job_id:
         note(job_id, text("train.bestLine", path=best_text or "missing"), 1)
-    return {"run": str(save_dir), "best": best_text, "epochs": epochs, "weights": weights, "device": device}
+    return {"run": str(save_dir), "best": best_text, "epochs": epochs, "weights": weights, "device": device, "backend": "ultralytics"}
+
+
+def train_rtdetr(payload: dict, progress, cancel) -> dict:
+    """Fine-tune RT-DETR when Transformers is installed. Boxes stay in review until accepted."""
+    try:
+        import torch
+        from PIL import Image
+        from transformers import AutoImageProcessor, RTDetrForObjectDetection
+    except Exception as exc:
+        raise StudioError(code="train.rtdetr", status=503) from exc
+    project = get_project(str(payload.get("projectId") or ""))
+    size = payload.get("size") or "r50"
+    model_id = str(payload.get("weights") or "").strip() or ("PekingU/rtdetr_r18vd" if size == "r18" else "PekingU/rtdetr_r50vd")
+    device = resolve_device(payload.get("device"))
+    if device == "cuda":
+        torch_device = torch.device("cuda")
+    else:
+        torch_device = torch.device("cpu")
+        device = "cpu"
+    epochs = max(1, int(payload.get("epochs") or 1))
+    raw_out = str(payload.get("output") or "").strip()
+    run_dir = Path(raw_out).expanduser() if raw_out else data_dir() / "runs" / "rtdetr"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    processor = AutoImageProcessor.from_pretrained(model_id)
+    model = RTDetrForObjectDetection.from_pretrained(model_id)
+    model.to(torch_device)
+    model.train()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
+    names = _names(project["id"])
+    images = list_images(project["id"])
+    job_id = str(payload.get("jobId") or "")
+    if job_id:
+        note(job_id, text("train.start", weights=model_id, device=device), 0.01)
+    steps = 0
+    for epoch in range(epochs):
+        if cancel.is_set():
+            raise RuntimeError(text("job.cancelled"))
+        for image in images:
+            if cancel.is_set():
+                raise RuntimeError(text("job.cancelled"))
+            path = image_file(project["id"], image["id"])
+            width = max(1, int(image.get("width") or 1))
+            height = max(1, int(image.get("height") or 1))
+            labels = []
+            boxes = []
+            for ann in get_image(project["id"], image["id"]).get("annotations") or []:
+                if (ann.get("attributes") or {}).get("review") == "pending":
+                    continue
+                geometry = ann.get("geometry") or {}
+                if geometry.get("type") != "bbox":
+                    continue
+                if ann.get("classId") not in names:
+                    continue
+                x = float(geometry.get("x") or 0) / width
+                y = float(geometry.get("y") or 0) / height
+                w = float(geometry.get("width") or 0) / width
+                h = float(geometry.get("height") or 0) / height
+                labels.append(names.index(ann["classId"]))
+                boxes.append([x + w / 2, y + h / 2, w, h])
+            if not boxes:
+                continue
+            picture = Image.open(path).convert("RGB")
+            target = {
+                "class_labels": torch.tensor(labels, dtype=torch.long),
+                "boxes": torch.tensor(boxes, dtype=torch.float32),
+            }
+            inputs = processor(images=picture, annotations=target, return_tensors="pt")
+            inputs = {key: value.to(torch_device) if hasattr(value, "to") else value for key, value in inputs.items()}
+            optimizer.zero_grad()
+            loss = model(**inputs).loss
+            loss.backward()
+            optimizer.step()
+            steps += 1
+        progress((epoch + 1) / epochs, f"{epoch + 1}/{epochs}")
+    model.save_pretrained(run_dir)
+    if job_id:
+        note(job_id, text("train.bestLine", path=str(run_dir)), 1, {"steps": steps})
+    return {"run": str(run_dir), "best": str(run_dir), "epochs": epochs, "weights": model_id, "device": device, "backend": "rtdetr", "steps": steps}
 
 
 def sam_batch(payload: dict, progress, cancel) -> dict:
@@ -202,7 +292,29 @@ def sam_batch(payload: dict, progress, cancel) -> dict:
     progress(0.2, "SAM")
     if cancel.is_set():
         raise RuntimeError(text("job.cancelled"))
-    result = segment(path, payload.get("points") or [], payload.get("labels"), payload.get("model"), payload.get("device"))
+    result = segment(
+        path,
+        payload.get("points") or [],
+        payload.get("labels"),
+        payload.get("model"),
+        payload.get("device"),
+        payload.get("conf"),
+    )
+    project_id = str(payload.get("projectId") or "")
+    class_id = str(payload.get("classId") or "")
+    names = _names(project_id)
+    if not class_id and names:
+        class_id = names[0]
+    if class_id and result.get("geometry"):
+        current = get_image(project_id, image_id)["annotations"]
+        kept = [ann for ann in current if (ann.get("attributes") or {}).get("source") != "sam" or (ann.get("attributes") or {}).get("review") != "pending"]
+        proposal = {
+            "classId": class_id,
+            "geometry": result["geometry"],
+            "attributes": {"source": "sam", "review": "pending"},
+        }
+        save_image(project_id, image_id, kept + [proposal], None, "review")
+        result["saved"] = True
     progress(1, "@job.done")
     return result
 
@@ -210,7 +322,7 @@ def sam_batch(payload: dict, progress, cancel) -> dict:
 def install_ai(payload: dict, progress, cancel) -> dict:
     from trainer_studio.deps import install_args
 
-    command = install_args()
+    command = install_args(str(payload.get("pack") or "ai"))
     progress(0.02, "pip")
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     lines: list[str] = []

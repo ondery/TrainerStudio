@@ -1,0 +1,2 @@
+# Optional RT-DETR backend. If CUDA PyTorch is already installed, install that first.
+transformers>=4.46

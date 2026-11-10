@@ -61,8 +61,10 @@ import {
 } from "lucide-react";
 import { appearance } from "@/lib/appearance";
 import { recentPaths } from "@/lib/browse";
-import { runCommand } from "@/lib/commands";
+import { commandKbd, runCommand } from "@/lib/commands";
 import { PANELS, loadLayout, placed, type PanelId } from "@/lib/grid";
+import { popOverlay, pushOverlay } from "@/lib/overlay";
+import { useCommandCatalog } from "@/lib/registry";
 import { useStudio } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -83,6 +85,25 @@ export function MenuBar() {
   const Prev = rtl ? ChevronRight : ChevronLeft;
   const Next = rtl ? ChevronLeft : ChevronRight;
   const look = appearance();
+  const catalog = useCommandCatalog();
+  const pluginCommands = catalog.commands.filter((command) => command.category === "plugin");
+  const [shortcutRev, setShortcutRev] = useState(0);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    pushOverlay({
+      id: "menubar",
+      close: () => setOpen(""),
+      dismissPointer: false,
+    });
+    return () => popOverlay("menubar");
+  }, [open]);
+
+  useEffect(() => {
+    const sync = () => setShortcutRev((value) => value + 1);
+    window.addEventListener("studio-shortcuts", sync);
+    return () => window.removeEventListener("studio-shortcuts", sync);
+  }, []);
 
   useEffect(() => {
     const sync = () => setVisible(new Set(placed(loadLayout())));
@@ -108,6 +129,7 @@ export function MenuBar() {
       dir={rtl ? "rtl" : "ltr"}
       value={open}
       onValueChange={setOpen}
+      data-shortcuts={shortcutRev}
       className="z-40 flex h-9 min-w-0 shrink-0 items-center gap-1 overflow-x-auto bg-panel px-2 text-[13px] leading-none"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -215,7 +237,7 @@ export function MenuBar() {
           <Item
             icon={Box}
             label={t("export.yolo")}
-            kbd="Ctrl+E"
+            commandId="export.yolo"
             onSelect={() => go("export.yolo")}
           />
           <Item
@@ -260,7 +282,7 @@ export function MenuBar() {
           testId="menu-settings"
           icon={Settings}
           label={t("file.settings")}
-          kbd="Ctrl+,"
+          commandId="file.settings"
           onSelect={() => go("file.settings")}
         />
       </Menu>
@@ -268,13 +290,13 @@ export function MenuBar() {
         <Item
           icon={Undo2}
           label={t("edit.undo")}
-          kbd="Ctrl+Z"
+          commandId="edit.undo"
           onSelect={() => go("edit.undo")}
         />
         <Item
           icon={Redo2}
           label={t("edit.redo")}
-          kbd="Ctrl+Shift+Z"
+          commandId="edit.redo"
           onSelect={() => go("edit.redo")}
         />
         <Sep />
@@ -287,32 +309,32 @@ export function MenuBar() {
         <Item
           icon={Copy}
           label={t("edit.copy")}
-          kbd="Ctrl+C"
+          commandId="edit.copy"
           onSelect={() => go("edit.copy")}
         />
         <Item
           icon={ClipboardPaste}
           label={t("edit.paste")}
-          kbd="Ctrl+V"
+          commandId="edit.paste"
           onSelect={() => go("edit.paste")}
         />
         <Item
           icon={Copy}
           label={t("m.duplicate")}
-          kbd="Ctrl+D"
+          commandId="edit.duplicate"
           onSelect={() => go("edit.duplicate")}
         />
         <Item
           icon={Trash2}
           label={t("edit.delete")}
-          kbd="Del"
+          commandId="edit.delete"
           onSelect={() => go("edit.delete")}
         />
         <Sep />
         <Item
           icon={Check}
           label={t("m.selectAll")}
-          kbd="Ctrl+A"
+          commandId="edit.all"
           onSelect={() => go("edit.all")}
         />
         <Item
@@ -330,14 +352,14 @@ export function MenuBar() {
         <Item
           icon={ClipboardPaste}
           label={t("m.copyPrev")}
-          kbd="C"
+          commandId="edit.prev"
           onSelect={() => go("edit.prev")}
         />
         <Sep />
         <Item
           icon={Command}
           label={t("edit.palette")}
-          kbd="Ctrl+K"
+          commandId="edit.palette"
           onSelect={() => go("edit.palette")}
         />
       </Menu>
@@ -345,25 +367,25 @@ export function MenuBar() {
         <Item
           icon={Maximize2}
           label={t("view.fit")}
-          kbd="F"
+          commandId="view.fit"
           onSelect={() => go("view.fit")}
         />
         <Item
           icon={ZoomIn}
           label={t("view.zoomIn")}
-          kbd="Ctrl++"
+          commandId="view.in"
           onSelect={() => go("view.in")}
         />
         <Item
           icon={ZoomOut}
           label={t("view.zoomOut")}
-          kbd="Ctrl+-"
+          commandId="view.out"
           onSelect={() => go("view.out")}
         />
         <Item
           icon={Maximize2}
           label={t("m.zoom100")}
-          kbd="Ctrl+0"
+          commandId="view.100"
           onSelect={() => go("view.100")}
         />
         <Sep />
@@ -924,17 +946,32 @@ export function MenuBar() {
           onSelect={() => go("ee.support")}
         />
       </Menu>
+      {catalog.menus.map((menu) => (
+        <Menu key={`${menu.pluginId}-${menu.id}`} id={`plugin-${menu.pluginId}`} label={menu.title}>
+          {pluginCommands
+            .filter((command) => command.pluginId === menu.pluginId)
+            .map((command) => (
+              <Item
+                key={command.id}
+                icon={Package}
+                label={command.title || command.titleKey}
+                testId={`menu-${command.id}`}
+                onSelect={() => go(command.id)}
+              />
+            ))}
+        </Menu>
+      ))}
       <Menu id="help" label={t("menu.help")}>
         <Item
           icon={Keyboard}
           label={t("help.shortcuts")}
-          kbd="Ctrl+/"
+          commandId="help.shortcuts"
           onSelect={() => go("help.shortcuts")}
         />
         <Item
           icon={Settings}
           label={t("file.settings")}
-          kbd="Ctrl+,"
+          commandId="file.settings"
           onSelect={() => go("file.settings")}
         />
         <Item
@@ -990,6 +1027,7 @@ function Item({
   icon: Icon,
   label,
   kbd = "",
+  commandId,
   checked,
   onSelect,
   testId,
@@ -997,10 +1035,13 @@ function Item({
   icon: Icon;
   label: string;
   kbd?: string;
+  commandId?: string;
   checked?: boolean;
   onSelect: () => void;
   testId?: string;
 }) {
+  const live = commandId ? commandKbd(commandId) : "";
+  const shown = live || kbd;
   return (
     <Menubar.Item
       data-testid={testId}
@@ -1011,9 +1052,9 @@ function Item({
       <Icon className="h-4 w-4 shrink-0" />
       <span className="min-w-0 flex-1 whitespace-nowrap">{label}</span>
       {checked ? <Check className="h-3.5 w-3.5 shrink-0 text-accent" /> : null}
-      {kbd ? (
+      {shown ? (
         <span className="ms-6 shrink-0 text-end text-[11px] tabular-nums tracking-wide text-muted">
-          {kbd}
+          {shown}
         </span>
       ) : null}
     </Menubar.Item>

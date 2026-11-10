@@ -90,6 +90,7 @@ export function Canvas() {
   const poly = useRef<Point[]>([]);
   const pose = useRef<Array<Point & { visibility: 0 | 1 | 2 }>>([]);
   const mask = useRef<Geometry | null>(null);
+  const maskChoices = useRef<Geometry[]>([]);
   const [size, setSize] = useState<Size>({ w: 800, h: 600 });
   const [scale, setScale] = useState(1);
   const [pointCount, setPointCount] = useState(0);
@@ -275,6 +276,18 @@ export function Canvas() {
     placeRunBorders(appearance().viewRotate || 0);
   }, [runs]);
 
+  useEffect(() => {
+    const cycle = () => {
+      const choices = maskChoices.current;
+      if (choices.length < 2) return;
+      const index = Math.max(0, choices.indexOf(mask.current as Geometry));
+      mask.current = choices[(index + 1) % choices.length];
+      paintPreview();
+    };
+    window.addEventListener("studio-sam-cycle", cycle);
+    return () => window.removeEventListener("studio-sam-cycle", cycle);
+  }, []);
+
   useEffect(() => useDraft.subscribe((state) => {
     setPointCount(state.points.length);
     paintPreviewRef.current();
@@ -297,7 +310,7 @@ export function Canvas() {
         ? mask.current
         : ({ type: "polygon", points: pointHull(points.map((point) => ({ x: point.x, y: point.y }))) } as Geometry);
       beginRun({ key: "sam", kind: "sam", geometry: pending, classColor: activeClassColor() });
-      void api<{ geometry: Geometry }>(`/api/projects/${projectId}/sam`, {
+      void api<{ geometry: Geometry; choices?: Geometry[] }>(`/api/projects/${projectId}/sam`, {
         method: "POST",
         body: JSON.stringify({
           imageId: editor.imageId,
@@ -305,11 +318,14 @@ export function Canvas() {
           labels: points.map((point) => point.sign),
           model: samCheckpoint.trim() || samModel,
           device: samDevice,
+          conf: appearance().samThreshold,
         }),
       })
         .then((body) => {
           if (samToken.current !== token) return;
-          mask.current = body.geometry;
+          const choices = appearance().samMulti && body.choices?.length ? body.choices : [body.geometry];
+          maskChoices.current = choices;
+          mask.current = choices[0];
           finishRun("sam");
           paintPreview();
         })

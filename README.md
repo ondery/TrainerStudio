@@ -3,15 +3,12 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Node.js 22](https://img.shields.io/badge/node-22-green.svg)](web/package.json)
-[![status: early development](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/ondery/TrainerStudio)
+[![status: 1.0.0](https://img.shields.io/badge/status-1.0.0-green)](https://github.com/ondery/TrainerStudio)
 
-Trainer Studio is a local-first, open-source image annotation tool for people who build YOLO object-detection datasets. You label bounding boxes and polygons in a browser, on a server that runs only on your computer, and the files stay in the Ultralytics YOLO layout (`data.yaml`, `images/`, `labels/`). The workspace is a dockable panel layout in the style of VS Code. The interface ships in 12 languages and defaults to English. The open core is AGPL-3.0. There is no account and no telemetry. Version 0.6.4.3 is a pre-1.0 early preview, not a stable 1.0 release.
-
-> [!WARNING]
-> Trainer Studio is under active development. This is a pre-1.0 early preview. Expect bugs and breaking changes. See [Roadmap / Not yet implemented](#roadmap--not-yet-implemented).
+Trainer Studio is a local-first, open-source image annotation tool for people who build YOLO object-detection datasets. You label bounding boxes and polygons in a browser, on a server that runs only on your computer, and the files stay in the Ultralytics YOLO layout (`data.yaml`, `images/`, `labels/`). The workspace is a dockable panel layout in the style of VS Code. The interface ships in 12 languages and defaults to English. The open core is AGPL-3.0. There is no account and no telemetry. Version 1.0.0.
 
 > [!NOTE]
-> Status: early development.
+> Version 1.0.0. Video, team accounts, and the multi-job GPU queue stay in the commercial add-on. They are locked in this public tree.
 
 ![Trainer Studio workbench in the default dark theme: a CC0 street photograph with labeled people, cars, and a sign polygon, plus the class bar, project explorer, and navigator](docs/screenshots/workbench.png)
 
@@ -26,7 +23,7 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - [Architecture](#architecture)
 - [Project layout](#project-layout)
 - [Comparison](#comparison)
-- [Roadmap / Not yet implemented](#roadmap--not-yet-implemented)
+- [What 1.0 includes](#what-10-includes)
 - [FAQ](#faq)
 - [Open core and Enterprise](#open-core-and-enterprise)
 - [How to cite](#how-to-cite)
@@ -35,12 +32,12 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 
 ## Key facts
 
-- **Status:** early development. Version 0.6.4.3 is a pre-1.0 preview
+- **Status:** 1.0.0. Video, team accounts, and the multi-job GPU queue stay in the commercial add-on
 - **What it is:** an offline YOLO labeling tool and image annotation tool for object-detection datasets
 - **License:** GNU Affero General Public License v3.0 (AGPL-3.0). See [LICENSE](LICENSE)
 - **Platforms:** Windows, macOS, and Linux
 - **Stack:** Next.js static UI, FastAPI, SQLite
-- **Formats:** YOLO detect, segment, oriented boxes (OBB), and pose (`data.yaml` plus label text). Export can also write COCO JSON, Pascal VOC XML, and task JSON
+- **Formats:** YOLO detect, segment, oriented boxes (OBB), and pose (`data.yaml` plus label text). Export can also write COCO JSON, Pascal VOC XML, CreateML, CVAT, LabelMe, KITTI, Darknet, Open Images CSV, and task JSON
 - **Tools:** bounding boxes, polygons, vertex handles, guide lines, class hotkeys, save and next
 - **Languages:** 12. A fresh install uses English until you choose another language
 - **Offline:** yes. Labeling does not need a network, an account, or a GPU
@@ -55,7 +52,7 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - Class hotkeys (`1`–`9`, then `Q`–`P`) and a class bar. Next class changes only the class used for the next shape
 - Ctrl+Enter saves the image and opens the next one. It does not replace a shape's class on its own
 - Suggestions from auto-label or SAM keep the class that was proposed, when those optional tools are installed and return a proposal. Accept or reject them without a silent class change
-- Point prompts need the optional SAM packages and a weight file. Labeling still works if they are not installed. This path is partial. See the roadmap
+- Point prompts need the optional SAM packages and a weight file on disk. Labeling still works if they are not installed. The SAM bar downloads the selected weight file when you ask. A missing file returns `sam.weights` and does not download on its own
 
 ### Workspace
 
@@ -63,24 +60,24 @@ Trainer Studio is a local-first, open-source image annotation tool for people wh
 - Project explorer for the dataset tree, an image list, and the class table
 - Navigator (minimap) with the current view, and a filmstrip
 - Raw data panel: the label file in a Monaco editor, plus JSON, `data.yaml`, and image facts
-- Ctrl+K opens a short command list (classes, languages, and a few tools). It is not a shared command registry. Ctrl+P is quick open
+- Ctrl+K opens the shared command list: classes, languages, and the same commands the menus run. A plugin can add a command to that list. Ctrl+P is quick open. Escape closes only the top menu, popover, or dialog
 
 ### Data
 
 - Open a folder that already has `data.yaml`, `images/`, and `labels/`
 - Class ids and their order come from `data.yaml` and are not renumbered on open
 - Class names, colors, and hotkeys are edited in the class manager. Removing or merging classes asks for confirmation
-- Import is the YOLO text you already have. Export writes a copy as YOLO, COCO, or Pascal VOC and does not overwrite the source dataset
+- Import is the YOLO text you already have. Export writes a copy as YOLO, COCO, Pascal VOC, CreateML, CVAT, LabelMe, KITTI, Darknet, or Open Images and does not overwrite the source dataset. A plugin can add another folder format
 - Task JSON is a separate exchange. File → Import tasks reads a task list, and File → Export → Task JSON writes one. Coordinates in that file are percentages of the image. Rectangles, polygons, rotated rectangles, and keypoints become the shapes this app edits. Brush, ellipse, and open vector regions keep their original values until you edit them, then they export as polygons. Predictions stay in review and are not written to `labels/` until you accept them. A remote address is not downloaded. A class name that is not in `data.yaml` is skipped unless you choose to add the missing classes
 - A small CC0 photograph sample lives in [`samples/street`](samples/street/LICENSE.md). Class names in that sample are car, person, bicycle, sign, light, bus, and truck
 
 ### Training
 
-A local training job and auto-label are in the open core, and both are partial. They stay idle until you install the optional packages in `requirements-ai.txt` and, for SAM or a training run, the weights those packages expect. There is no separate engine-plugin slot. The `plugins/` folder in this tree is empty.
+A local training job and auto-label are in the open core. They stay idle until you install the optional packages and, for SAM or a training run, the weights those packages expect. `plugins/example` adds one command. `plugins/boxfile` is an engine you can drop in. It does not relabel a dataset until you run its job.
 
-- When Ultralytics is installed, a job can use the YOLO11, YOLOv8, and YOLO26 model names listed in the app, or weights you supply. Ultralytics is AGPL-3.0. This is one local job, not a finished training product
-- An optional RT-DETR backend uses Hugging Face Transformers (Apache-2.0) and does not import Ultralytics. It runs only when Transformers is installed. Predictions whose names are not in `data.yaml` are skipped
-- A multi-job GPU queue is not part of the open core
+- When Ultralytics is installed, a job can use the YOLO11, YOLOv8, and YOLO26 model names listed in the app, or weights you supply. Ultralytics is AGPL-3.0. The open core runs one CUDA job at a time
+- An optional RT-DETR backend uses Hugging Face Transformers (Apache-2.0) and does not import Ultralytics. Install it from `requirements-rtdetr.txt`. It can detect and fine-tune when Transformers is installed. Predictions whose names are not in `data.yaml` are skipped
+- A multi-job GPU queue stays in the commercial add-on
 - CPU is enough for labeling. A GPU is optional and is used only when the installed PyTorch build can see CUDA
 
 ## Screenshots
@@ -130,7 +127,7 @@ python -m trainer_studio
 The published image is the open core. It listens on port 43150. Mount the dataset folder at `/data`. The app database stays in the container volume, not in the dataset.
 
 ```bash
-docker run --rm -p 43150:43150 -v /path/to/dataset:/data ghcr.io/ondery/trainerstudio:0.6.4.3
+docker run --rm -p 43150:43150 -v /path/to/dataset:/data ghcr.io/ondery/trainerstudio:1.0.0
 ```
 
 Then open `http://127.0.0.1:43150`. On Windows, use a drive path such as `C:\labels\dataset` after the `-v`.
@@ -141,6 +138,12 @@ SAM, auto-label, and local training need extra packages. If you already have a C
 
 ```bash
 python -m pip install -r requirements-ai.txt
+```
+
+RT-DETR training and detection use a second file. Install CUDA PyTorch first when you already have it.
+
+```bash
+python -m pip install -r requirements-rtdetr.txt
 ```
 
 ## Keyboard shortcuts
@@ -208,6 +211,8 @@ The interface is a Next.js app built as a static export and served by FastAPI fr
 
 The process binds to `127.0.0.1` unless `STUDIO_HOST` is set. There is no account and no telemetry.
 
+The page can be installed from the browser. The installed icon opens this address. It does not start the Python process. The service worker does not cache `/api/`.
+
 Local file routes require a session token. `GET /api/health` returns that token, and the page sends it back as the `X-Studio-Session` header on dialog, local-file, and filesystem routes. A page on another origin cannot read the token. A path outside the data directory is allowed only with a one-time grant issued by the folder dialog for that exact path. Anything else returns HTTP 403. The generic file writer will not write into an opened dataset's `labels/` tree or its `data.yaml`. Annotation saves go through the project API, which reads class indexes from `data.yaml` at write time and does not store a client-supplied class number.
 
 ## Project layout
@@ -216,6 +221,8 @@ Local file routes require a session token. `GET /api/health` returns that token,
 trainer_studio/     FastAPI app, YOLO import and export, SQLite
 web/                Next.js interface (source)
 static/             Built interface served by the API
+plugins/            Example command and the boxfile engine
+src-tauri/          Windows, macOS, and Linux installer source
 samples/street/     CC0 photographs used in the screenshots
 docs/screenshots/   Interface pictures
 docs/FAQ.md         Questions and answers
@@ -250,30 +257,30 @@ Figures below describe the public open core of Trainer Studio and the usual publ
 | YOLO files                  | Detect, segment, OBB, and pose text, plus `data.yaml`  | Detection text, and also Pascal VOC and CreateML | YOLO is one of the export formats             | YOLO is one of the documented export formats, with COCO and VOC | YOLO export from the hosted project             |
 | Extra setup                 | A virtual environment and `pip install`                | A Python/Qt install                              | A server install, often with Docker           | A server install, or a cloud signup                             | An account on the hosted platform               |
 
-## Roadmap / Not yet implemented
+## What 1.0 includes
 
-Version 0.6.4.3 is a pre-1.0 early preview. The feature matrix in `docs/feature-matrix.md` marks the 0.6.3 labeling surface as present. The items below are still missing, partial, or not in this preview. A later workbench revision is in progress and is not merged here.
+Version 1.0.0 closes the 0.6.4.3 preview list. The commercial rows stay out of this public tree. A license key in the add-on unlocks them. Without that key the routes return HTTP 402.
 
-| Item                                                    | Status                                                                                                                                                                                      |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Command list                                            | Partial. Ctrl+K opens classes, languages, and a few tools. There is no shared command registry that plugins can extend.                                                                     |
-| Keybinding service                                      | Planned. Shortcuts are a fixed map plus the shortcut editor. When-clauses and conflict checks are not in this preview.                                                                      |
-| One overlay stack for menus, popovers, and dialogs      | Planned. Dialogs and menus work on their own. They are not one stack.                                                                                                                       |
-| Layout audit across window sizes and languages          | Planned. This tree has no automated layout audit.                                                                                                                                           |
-| Installable PWA                                         | Planned. The interface is a static page served by the local API. It does not install as an app.                                                                                             |
-| Training and auto-label                                 | Partial. One local job can run after the optional packages and weights are installed. `plugins/` ships empty, so there is no engine plugin to drop in. A GPU queue is not in the open core. |
-| SAM point prompts                                       | Partial. The tool is in the interface and does nothing until the optional packages and a weight file are present.                                                                           |
-| Export formats                                          | YOLO, COCO JSON, and Pascal VOC XML are in the core. Other formats are not.                                                                                                                 |
-| Video and camera import                                 | Not in this preview. Frame import stays locked with the commercial add-on.                                                                                                                  |
-| Team accounts, roles, review assignment                 | Not in this preview. They stay locked with the commercial add-on.                                                                                                                           |
-| macOS and Linux installers                              | Planned. Those systems start from a Python virtual environment. This tree has no macOS or Linux installer.                                                                                  |
-| Tagged 1.0 release and a Windows installer in this tree | Planned. Nothing here is a 1.0 release. This preview does not ship an installer.                                                                                                            |
+| Item                                                    | Status                                                                                                                                                                                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Command list                                            | Shipped. Menus and Ctrl+K share one registry. A plugin command is a palette row and runs its route.                                                                                                                                         |
+| Keybinding service                                      | Shipped. Bindings have when-clauses. The editor refuses a combo that can fire two actions at once.                                                                                                                                          |
+| One overlay stack for menus, popovers, and dialogs      | Shipped. Escape closes only the top layer.                                                                                                                                                                                                  |
+| Layout audit across window sizes and languages          | Shipped. `scripts/layout-audit.spec.mjs` covers 1280, 1366, 1920, 2560, and 3354 for English, Turkish, German, Japanese, and Arabic.                                                                                                        |
+| Installable PWA                                         | Shipped. The manifest and service worker install the page. The icon does not start the Python process.                                                                                                                                      |
+| Training and auto-label                                 | Shipped in the core as one local job, including an engine plugin slot. `plugins/boxfile` is the drop-in example. A multi-job GPU queue stays in the commercial add-on.                                                                      |
+| SAM point prompts                                       | Shipped when the optional packages are installed and a weight file is on disk. The SAM bar can download that file. Missing weights return `sam.weights` and do not download on their own.                                                  |
+| Export formats                                          | Shipped. YOLO, COCO JSON, Pascal VOC XML, CreateML, CVAT XML, LabelMe, KITTI, Darknet, and Open Images CSV. A plugin exporter can add another.                                                                                            |
+| Video and camera import                                 | Shipped in the commercial add-on. This public tree keeps the routes locked.                                                                                                                                                                 |
+| Team accounts, roles, review assignment                 | Shipped in the commercial add-on. This public tree keeps the routes locked.                                                                                                                                                                 |
+| macOS and Linux installers                              | Shipped as release jobs. A `v*` tag builds an unsigned macOS app and dmg, and a Linux deb and AppImage.                                                                                                                                     |
+| Tagged 1.0 release and a Windows installer in this tree | Shipped. `src-tauri/` is in this tree. A `v*` tag builds the MSI and NSIS installers.                                                                                                                                                       |
 
 ## FAQ
 
 ### Is this a finished 1.0?
 
-No. Version 0.6.4.3 is a pre-1.0 early preview under active development. Expect bugs and breaking changes. The [roadmap](#roadmap--not-yet-implemented) lists what is partial or not in this tree.
+Yes. Version 1.0.0 is the tagged open-core release. [What 1.0 includes](#what-10-includes) records what shipped, and which rows stay in the commercial add-on.
 
 ### Is Trainer Studio free?
 
@@ -285,7 +292,7 @@ Yes. After installation, labeling, saving, and YOLO export do not call an extern
 
 ### Which formats can it read and write?
 
-It opens Ultralytics YOLO datasets: `data.yaml` with detect, segment, oriented-box, or pose label text. Export writes a new folder as YOLO, COCO JSON, or Pascal VOC XML. The source dataset is left as it is.
+It opens Ultralytics YOLO datasets: `data.yaml` with detect, segment, oriented-box, or pose label text. Export writes a new folder as YOLO, COCO JSON, Pascal VOC XML, CreateML, CVAT, LabelMe, KITTI, Darknet, or Open Images. The source dataset is left as it is.
 
 ### How do I export to YOLO?
 
@@ -319,7 +326,7 @@ More answers are in [docs/FAQ.md](docs/FAQ.md).
 
 ## Open core and Enterprise
 
-This repository is the open core: labeling, classes, YOLO import and export, and the dockable workspace. The plugin folder is empty. Local SAM and training are partial and need optional packages.
+This repository is the open core: labeling, classes, import and export, the dockable workspace, the command registry, and local SAM and training when the optional packages are installed. `plugins/example` and `plugins/boxfile` ship with the tree. They do not relabel a dataset on their own.
 
 The following are available in the commercial add-on. Contact the author. They are not shipped here, and the interface keeps them locked:
 
@@ -343,7 +350,7 @@ BibTeX:
 @software{trainerstudio,
   title = {Trainer Studio},
   author = {{ondery}},
-  version = {0.6.4.3},
+  version = {1.0.0},
   year = {2026},
   url = {https://github.com/ondery/TrainerStudio},
   license = {AGPL-3.0}
@@ -352,7 +359,7 @@ BibTeX:
 
 Plain text:
 
-> ondery. (2026). Trainer Studio (0.6.4.3) [Computer software]. https://github.com/ondery/TrainerStudio
+> ondery. (2026). Trainer Studio (1.0.0) [Computer software]. https://github.com/ondery/TrainerStudio
 
 ## Contributing
 

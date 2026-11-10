@@ -599,7 +599,10 @@ export const useDraft = create<Draft>((set, get) => ({
   popup: null,
   hold: null,
   addPoint(point) {
-    set({ points: [...get().points, point], selected: get().points.length });
+    const limit = Math.max(1, Number(appearance().samMaxPoints) || 8);
+    const points = get().points;
+    if (points.length >= limit) return;
+    set({ points: [...points, point], selected: points.length });
   },
   selectPoint(index) {
     set({ selected: index });

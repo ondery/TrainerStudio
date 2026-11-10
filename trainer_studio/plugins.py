@@ -60,13 +60,32 @@ class PluginContext:
     def add_settings(self, spec: dict) -> None:
         self.settings.append({"plugin": self.plugin_id, **spec})
 
-    def add_exporter(self, export_id: str, title: str) -> None:
+    def add_exporter(self, export_id: str, title: str, fn: Callable | None = None) -> None:
         self._check("export")
         self.exporters.append({"plugin": self.plugin_id, "id": export_id, "title": title})
+        if fn is not None:
+            from trainer_studio.exporting import register_exporter
 
-    def add_job(self, kind: str, title: str) -> None:
+            register_exporter(f"{self.plugin_id}.{export_id}", title, fn)
+
+    def add_detector(self, detector) -> None:
+        self._check("jobs")
+        from trainer_studio.detectors import register_defaults
+        from trainer_studio.detectors.base import available
+
+        register_defaults()
+        detector_id = getattr(detector, "id", "")
+        if any(getattr(item, "id", None) == detector_id for item in available):
+            return
+        available.append(detector)
+
+    def add_job(self, kind: str, title: str, fn: Callable | None = None) -> None:
         self._check("jobs")
         self.jobs.append({"plugin": self.plugin_id, "kind": kind, "title": title})
+        if fn is not None:
+            from trainer_studio.jobs import register
+
+            register(kind, fn)
 
     def log(self, message: str) -> None:
         return None

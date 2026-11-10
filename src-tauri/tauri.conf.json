@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Trainer Studio",
+  "version": "1.0.0",
+  "identifier": "studio.trainer.app",
+  "build": {
+    "frontendDist": "../static",
+    "devUrl": "http://127.0.0.1:43150",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Trainer Studio",
+        "url": "http://127.0.0.1:43150",
+        "width": 1440,
+        "height": 900,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis", "app", "dmg", "deb", "appimage"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ]
+  }
+}

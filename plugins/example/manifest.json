@@ -1,0 +1,9 @@
+{
+  "id": "example",
+  "name": "Example",
+  "version": "1.0.0",
+  "entry": "plugin.py",
+  "frontend": "ui.js",
+  "permissions": ["tools"],
+  "description": "Registers a command the palette and menu can run. It does not change labels."
+}

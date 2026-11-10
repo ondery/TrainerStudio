@@ -23,15 +23,61 @@ def models() -> list[dict]:
     return [dict(row) for row in MODELS]
 
 
+def _search_weights(filename: str) -> Path | None:
+    from trainer_studio.db import data_dir
+
+    roots = [Path.cwd(), data_dir() / "weights", Path.home() / ".ultralytics" / "weights"]
+    try:
+        from ultralytics.utils import SETTINGS
+
+        roots.append(Path(str(SETTINGS.get("weights_dir") or "")))
+    except Exception:
+        pass
+    for root in roots:
+        if not str(root):
+            continue
+        candidate = (root / filename).expanduser()
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def _weights(model_id: str | None) -> str:
     wanted = (model_id or "mobile_sam").strip()
     candidate = Path(wanted).expanduser()
-    if candidate.suffix.lower() in {".pt", ".onnx"} and candidate.is_file():
-        return str(candidate)
+    if candidate.suffix.lower() in {".pt", ".onnx"}:
+        if candidate.is_file():
+            return str(candidate)
+        raise StudioError(code="sam.weights", params={"file": candidate.name})
     for row in MODELS:
         if row["id"] == wanted:
-            return row["weights"]
+            found = _search_weights(row["weights"])
+            if found is None:
+                raise StudioError(code="sam.weights", params={"file": row["weights"]})
+            return str(found)
     raise StudioError(code="sam.model", params={"model": wanted})
+
+
+def download_weights(model_id: str | None) -> dict:
+    """Fetch a catalog checkpoint. Called only when the user asks."""
+    wanted = (model_id or "mobile_sam").strip()
+    filename = ""
+    for row in MODELS:
+        if row["id"] == wanted:
+            filename = row["weights"]
+            break
+    if not filename:
+        raise StudioError(code="sam.model", params={"model": wanted})
+    found = _search_weights(filename)
+    if found is not None:
+        return {"ok": True, "weights": str(found), "file": filename}
+    try:
+        from ultralytics import SAM
+    except Exception as exc:
+        raise StudioError(code="sam.unavailable", status=424) from exc
+    SAM(filename)
+    found = _search_weights(filename)
+    return {"ok": True, "weights": str(found or filename), "file": filename}
 
 
 def _device(requested: str | None) -> str:
@@ -69,9 +115,16 @@ def segment(
     labels: list[int] | None = None,
     model_id: str | None = None,
     device: str | None = None,
+    conf: float | None = None,
 ) -> dict:
     if not points:
         raise StudioError(code="sam.points")
+    try:
+        import importlib
+
+        importlib.import_module("ultralytics")
+    except Exception as exc:
+        raise StudioError(code="sam.unavailable", status=424) from exc
     weights = _weights(model_id)
     chosen = _device(device)
     model = _load(weights, chosen)
@@ -79,7 +132,10 @@ def segment(
     marks = labels or [1 for _ in xy]
     if len(marks) != len(xy):
         raise StudioError(code="sam.labels")
-    results = model.predict(str(image_path), points=xy, labels=marks, device=chosen, verbose=False)
+    kwargs = {"points": xy, "labels": marks, "device": chosen, "verbose": False}
+    if conf is not None:
+        kwargs["conf"] = float(conf)
+    results = model.predict(str(image_path), **kwargs)
     result = results[0]
     masks = getattr(result, "masks", None)
     polygons = []
@@ -91,9 +147,11 @@ def segment(
     if not polygons:
         raise StudioError(code="sam.empty")
     polygons.sort(key=len, reverse=True)
+    choices = [{"type": "polygon", "points": polygon} for polygon in polygons]
     return {
-        "geometry": {"type": "polygon", "points": polygons[0]},
-        "polygons": len(polygons),
+        "geometry": choices[0],
+        "choices": choices,
+        "polygons": len(choices),
         "model": model_id or "mobile_sam",
         "device": chosen,
     }

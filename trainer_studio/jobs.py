@@ -15,6 +15,16 @@ from trainer_studio.messages import text
 
 _RUNNERS: dict[str, Callable] = {}
 _CANCEL: dict[str, threading.Event] = {}
+_GATE = threading.Lock()
+_CUDA_HELD = 0
+_WAITING: list[tuple[str, str, dict]] = []
+
+
+def holds_cuda(payload: dict | None) -> bool:
+    """True when this job asked for CUDA and this process can use it."""
+    from trainer_studio.deps import resolve_device
+
+    return resolve_device((payload or {}).get("device")) == "cuda"
 
 
 def register(kind: str, fn: Callable) -> None:
@@ -121,10 +131,45 @@ def start(kind: str, project_id: str | None, payload: dict) -> dict:
             conn.commit()
         finally:
             conn.close()
+    _consider(job_id, kind, payload)
+    return get_job(job_id)
+
+
+def _consider(job_id: str, kind: str, payload: dict) -> None:
+    with _GATE:
+        if holds_cuda(payload) and _CUDA_HELD:
+            _WAITING.append((job_id, kind, payload))
+            return
+        _spawn_locked(job_id, kind, payload)
+
+
+def _spawn_locked(job_id: str, kind: str, payload: dict) -> None:
+    global _CUDA_HELD
+    if holds_cuda(payload):
+        _CUDA_HELD += 1
     cancel = threading.Event()
     _CANCEL[job_id] = cancel
+    threading.Thread(target=_execute, args=(job_id, kind, payload, cancel), name=f"job-{kind}", daemon=True).start()
 
-    def run() -> None:
+
+def _release_and_pump(payload: dict) -> None:
+    global _CUDA_HELD
+    nxt: tuple[str, str, dict] | None = None
+    with _GATE:
+        if holds_cuda(payload):
+            _CUDA_HELD = max(0, _CUDA_HELD - 1)
+        if _WAITING and not (holds_cuda(_WAITING[0][2]) and _CUDA_HELD):
+            nxt = _WAITING.pop(0)
+        if nxt is not None:
+            _spawn_locked(*nxt)
+
+
+def _execute(job_id: str, kind: str, payload: dict, cancel: threading.Event) -> None:
+    fn = _RUNNERS.get(kind)
+    try:
+        if fn is None:
+            _update(job_id, status="failed", message="@job.kind")
+            return
         _update(job_id, status="running", message="@job.started")
 
         def progress(value: float, message: str = "") -> None:
@@ -170,9 +215,8 @@ def start(kind: str, project_id: str | None, payload: dict) -> dict:
                     "messageParams": params,
                 }, ensure_ascii=False),
             )
-
-    threading.Thread(target=run, name=f"job-{kind}", daemon=True).start()
-    return get_job(job_id)
+    finally:
+        _release_and_pump(payload)
 
 
 def cancel(job_id: str) -> dict:

@@ -1,4 +1,4 @@
-# Feature matrix (0.6.3)
+# Feature matrix (1.0.0)
 
 Core features ship with the AGPL app. Enterprise rows do real work after `ee.gate` allows the feature. Without a license they return HTTP 402. They are not placeholders.
 

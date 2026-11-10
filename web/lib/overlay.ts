@@ -13,33 +13,92 @@ export function eventInsideOverlay(target: EventTarget | null, roots: Array<HTML
   return target instanceof Element && Boolean(target.closest(NESTED_OVERLAY));
 }
 
-/** Escape and an outside press close the layer. Nested portals and sliders do not. */
+type OverlayEntry = {
+  id: string;
+  close: () => void;
+  z: number;
+  dismissPointer: boolean;
+  inside?: () => Array<HTMLElement | null | undefined>;
+};
+
+const stack: OverlayEntry[] = [];
+let listening = false;
+let serial = 0;
+
+function ensureListener() {
+  if (listening || typeof document === "undefined") return;
+  listening = true;
+  document.addEventListener("keydown", onKey, true);
+  document.addEventListener("pointerdown", onPointer, true);
+}
+
+function onKey(event: KeyboardEvent) {
+  if (event.key !== "Escape" || !stack.length) return;
+  const top = stack[stack.length - 1];
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  stack.pop();
+  top.close();
+}
+
+function onPointer(event: PointerEvent) {
+  const top = stack[stack.length - 1];
+  if (!top?.dismissPointer) return;
+  const roots = top.inside ? top.inside() : [];
+  if (eventInsideOverlay(event.target, roots)) return;
+  stack.pop();
+  top.close();
+}
+
+export function pushOverlay(entry: {
+  id: string;
+  close: () => void;
+  dismissPointer?: boolean;
+  inside?: () => Array<HTMLElement | null | undefined>;
+}): number {
+  const index = stack.findIndex((item) => item.id === entry.id);
+  if (index >= 0) stack.splice(index, 1);
+  const z = 60 + stack.length;
+  stack.push({
+    id: entry.id,
+    close: entry.close,
+    z,
+    dismissPointer: entry.dismissPointer !== false,
+    inside: entry.inside,
+  });
+  ensureListener();
+  return z;
+}
+
+export function popOverlay(id: string) {
+  const index = stack.findIndex((item) => item.id === id);
+  if (index >= 0) stack.splice(index, 1);
+}
+
+export function topOverlay() {
+  return stack[stack.length - 1] || null;
+}
+
+export function overlayDepth() {
+  return stack.length;
+}
+
+/** Escape and an outside press close the top layer only. */
 export function useBoundDismiss(open: boolean, close: () => void, inside: () => Array<HTMLElement | null | undefined>) {
   const closeRef = useRef(close);
   const insideRef = useRef(inside);
+  const idRef = useRef(`bound-${(serial += 1)}`);
   closeRef.current = close;
   insideRef.current = inside;
   useEffect(() => {
     if (!open) return undefined;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      const nested = document.querySelector(NESTED_OVERLAY);
-      const roots = insideRef.current();
-      const owned = Boolean(nested && roots.some((root) => root?.contains(nested)));
-      if (nested && !owned) return;
-      event.preventDefault();
-      event.stopPropagation();
-      closeRef.current();
-    };
-    const onPointer = (event: PointerEvent) => {
-      if (eventInsideOverlay(event.target, insideRef.current())) return;
-      closeRef.current();
-    };
-    document.addEventListener("keydown", onKey, true);
-    document.addEventListener("pointerdown", onPointer, true);
-    return () => {
-      document.removeEventListener("keydown", onKey, true);
-      document.removeEventListener("pointerdown", onPointer, true);
-    };
+    pushOverlay({
+      id: idRef.current,
+      close: () => closeRef.current(),
+      dismissPointer: true,
+      inside: () => insideRef.current(),
+    });
+    return () => popOverlay(idRef.current);
   }, [open]);
 }

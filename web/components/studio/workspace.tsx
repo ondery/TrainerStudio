@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
   ClipboardPaste,
   Copy,
+  Download,
   Eraser,
   FolderOpen,
   FolderPlus,
@@ -25,11 +26,12 @@ import { breakpointFor, loadLayout, withoutToolbar, type ShellTemplate } from "@
 import { FILTERS, attachTauriDrop, browse, deliverDrop, pathFromTransfer } from "@/lib/browse";
 import { copyAnnotations } from "@/lib/clipboard";
 import { acceptGeometry, deleteSelected, drawCommands, pasteIntoImage } from "@/lib/draw";
-import { saveAndContinue, shouldConfirmNext } from "@/lib/save-next";
+import { saveAndContinue } from "@/lib/save-next";
 import { classHotkeyAllowed, clearExplicit, markExplicit } from "@/lib/save-next-rules";
 import { moveAnnotation } from "@/lib/geom";
 import { runLegacyAction } from "@/lib/legacy-actions";
-import { comboFromEvent, matchAction, type ShortcutAction } from "@/lib/shortcuts";
+import { matchAction, type ShortcutAction, type ShortcutContext } from "@/lib/shortcuts";
+import { replacePluginSurface, type CommandSpec } from "@/lib/registry";
 import { openTab } from "@/lib/tabs";
 import { useDraft, useStudio } from "@/lib/store";
 import { useBoundDismiss } from "@/lib/overlay";
@@ -47,18 +49,28 @@ import { PanelBody } from "./panels";
 
 const Canvas = dynamic(() => import("./canvas").then((mod) => mod.Canvas), { ssr: false });
 
+type PluginCommandRow = { id?: string; title?: string; path?: string };
+type PluginMenuRow = { id?: string; title?: string };
 type PluginRow = {
   id: string;
   name: string;
   enabled: boolean;
   frontend: string;
   panels: { id?: string; title?: string }[];
+  commands?: PluginCommandRow[];
+  menus?: PluginMenuRow[];
+};
+
+type RegisteredPlugin = {
+  id: string;
+  mount?: (el: HTMLElement) => void;
+  commands?: { id: string; title: string; run?: () => void }[];
 };
 
 declare global {
   interface Window {
     TrainerStudio?: {
-      registerPlugin: (plugin: { id: string; mount: (el: HTMLElement) => void }) => void;
+      registerPlugin: (plugin: RegisteredPlugin) => void;
     };
   }
 }
@@ -92,25 +104,19 @@ export function Workspace() {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       const monacoEdit = Boolean(target?.closest?.("[data-monaco-edit='1']"));
-      if (shouldConfirmNext({ combo: comboFromEvent(event), monacoEdit })) {
-        event.preventDefault();
-        saveAndContinue();
-        return;
-      }
       if (event.key === "Escape") {
         drawCommands.cancel();
         useDraft.getState().closePopup();
-        useStudio.getState().patchUi({ palette: false, dialog: "" });
         return;
       }
-      if (!classHotkeyAllowed(target?.tagName || "", Boolean(target?.isContentEditable))) return;
-      if (event.code === "Space" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      const typing = !classHotkeyAllowed(target?.tagName || "", Boolean(target?.isContentEditable));
+      if (!typing && event.code === "Space" && !event.metaKey && !event.ctrlKey && !event.altKey) {
         event.preventDefault();
         drawCommands.space(true);
         return;
       }
       const tool = useStudio.getState().ui.tool;
-      if (!event.metaKey && !event.ctrlKey && !event.altKey && (event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "ArrowUp" || event.key === "ArrowDown")) {
+      if (!typing && !event.metaKey && !event.ctrlKey && !event.altKey && (event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "ArrowUp" || event.key === "ArrowDown")) {
         const studio = useStudio.getState();
         const ids = new Set(studio.editor.selected);
         if (ids.size) {
@@ -122,12 +128,12 @@ export function Workspace() {
           return;
         }
       }
-      if (event.key === "Backspace" && !event.metaKey && !event.ctrlKey && !event.altKey && ["sam", "polygon", "pose"].includes(tool)) {
+      if (!typing && event.key === "Backspace" && !event.metaKey && !event.ctrlKey && !event.altKey && ["sam", "polygon", "pose"].includes(tool)) {
         event.preventDefault();
         drawCommands.backspace();
         return;
       }
-      if (!event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey && event.key.length === 1) {
+      if (!typing && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey && event.key.length === 1) {
         const armed = useStudio.getState();
         const hot = armed.classes.find((item) => (item.hotkey || "").toLowerCase() === event.key.toLowerCase());
         if (hot) {
@@ -141,7 +147,21 @@ export function Workspace() {
           return;
         }
       }
-      const action = matchAction(event);
+      const armedNow = useStudio.getState();
+      const selectedClass = armedNow.editor.annotations.find((row) => row.id === armedNow.editor.selected[0]);
+      const ctx: ShortcutContext = {
+        tool: armedNow.ui.tool,
+        dialog: armedNow.ui.dialog,
+        paletteOpen: armedNow.ui.palette,
+        tag: target?.tagName || "",
+        editable: Boolean(target?.isContentEditable),
+        monacoEdit,
+        hasSelection: armedNow.editor.selected.length > 0,
+        projectOpen: Boolean(armedNow.project),
+        classHotkeys: appearance().classHotkeys,
+        speedClass: Boolean(selectedClass?.classId.startsWith("speed_")),
+      };
+      const action = matchAction(event, undefined, ctx);
       if (!action) return;
       if (runShortcut(action)) event.preventDefault();
     };
@@ -536,6 +556,18 @@ function SamBar() {
         <option value="cuda" disabled={!status.cuda}>{t("sam.cuda")}</option>
       </select>
       <TextButton label={t("sam.clear")} icon={Eraser} onClick={() => drawCommands.cancel()} />
+      {appearance().samMulti ? (
+        <TextButton label={t("sam.next", { defaultValue: "Next mask" })} onClick={() => window.dispatchEvent(new Event("studio-sam-cycle"))} />
+      ) : null}
+      <TextButton
+        label={t("sam.download", { defaultValue: "Download weights" })}
+        icon={Download}
+        onClick={() => {
+          void api("/api/ai/sam/download", { method: "POST", body: JSON.stringify({ model: samModel }) })
+            .then(() => useStudio.getState().setNotice(t("sam.download", { defaultValue: "Download weights" })))
+            .catch((error: Error) => useStudio.getState().setNotice(error.message, "error"));
+        }}
+      />
       {status.ultralytics === false ? (
         <>
           <span className="max-w-xs truncate text-warn" title={status.hintCode ? t(`api.${status.hintCode}`, { defaultValue: status.hint || t("sam.missing") }) : status.hint || t("sam.missing")}>
@@ -849,20 +881,70 @@ function ClassPopup() {
   );
 }
 
-const pluginQueue: { id: string; mount: (el: HTMLElement) => void }[] = [];
+const pluginQueue: RegisteredPlugin[] = [];
+const pluginsRef: { current: PluginRow[] } = { current: [] };
+const scriptedPlugins = new Map<string, RegisteredPlugin>();
+
+function pluginCommandsFrom(plugin: PluginRow, scripted?: RegisteredPlugin["commands"]): CommandSpec[] {
+  const rows = scripted?.length ? scripted : plugin.commands || [];
+  return rows.flatMap((command) => {
+    const id = command.id || "";
+    if (!id) return [];
+    const scriptedRun = scripted?.find((item) => item.id === id)?.run;
+    const path = "path" in command && command.path ? command.path : `/api/plugins/ext/${plugin.id}/command`;
+    return [
+      {
+        id,
+        titleKey: command.title || id,
+        title: command.title || id,
+        category: "plugin" as const,
+        pluginId: plugin.id,
+        order: 10,
+        run: () => {
+          if (scriptedRun) {
+            scriptedRun();
+            return;
+          }
+          void api(path, { method: "POST", body: JSON.stringify({ id }) }).catch(() => undefined);
+        },
+      },
+    ];
+  });
+}
+
+function publishPlugin(plugin: PluginRow, scripted?: RegisteredPlugin) {
+  replacePluginSurface(
+    plugin.id,
+    pluginCommandsFrom(plugin, scripted?.commands),
+    (plugin.menus || []).flatMap((menu) => {
+      const id = menu.id || plugin.id;
+      const title = menu.title || plugin.name;
+      return title ? [{ pluginId: plugin.id, id, title }] : [];
+    }),
+  );
+}
 
 function PluginSlot() {
   const [plugins, setPlugins] = useState<PluginRow[]>([]);
   useEffect(() => {
     window.TrainerStudio = {
       registerPlugin(plugin) {
+        scriptedPlugins.set(plugin.id, plugin);
         const host = document.getElementById(`plugin-mount-${plugin.id}`);
-        if (host) plugin.mount(host);
+        if (host && plugin.mount) plugin.mount(host);
         else pluginQueue.push(plugin);
+        const row = pluginsRef.current.find((item) => item.id === plugin.id);
+        if (row) publishPlugin(row, plugin);
       },
     };
     void api<{ plugins: PluginRow[] }>("/api/plugins")
-      .then((body) => setPlugins(body.plugins))
+      .then((body) => {
+        pluginsRef.current = body.plugins;
+        setPlugins(body.plugins);
+        for (const plugin of body.plugins) {
+          if (plugin.enabled) publishPlugin(plugin, scriptedPlugins.get(plugin.id));
+        }
+      })
       .catch(() => setPlugins([]));
   }, []);
   useEffect(() => {
@@ -877,7 +959,7 @@ function PluginSlot() {
     }
     for (const plugin of pluginQueue.splice(0)) {
       const host = document.getElementById(`plugin-mount-${plugin.id}`);
-      if (host) plugin.mount(host);
+      if (host && plugin.mount) plugin.mount(host);
     }
   }, [plugins]);
   const visible = plugins.filter((plugin) => plugin.enabled && plugin.panels.length);

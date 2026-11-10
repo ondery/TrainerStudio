@@ -1,0 +1,8 @@
+{
+  "id": "boxfile",
+  "name": "Box file",
+  "version": "1.0.0",
+  "entry": "plugin.py",
+  "permissions": ["jobs"],
+  "description": "Example engine. Predict returns no boxes unless a sidecar is present. The echo job does not write labels."
+}

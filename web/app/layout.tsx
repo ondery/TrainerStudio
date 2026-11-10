@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { PwaRegister } from "@/components/studio/pwa";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Trainer Studio",
-  description: "Label images and export YOLO on this computer.",
+  description: "Label images and export YOLO on this computer. The installed icon opens this address and does not start the local server.",
+  manifest: "/manifest.webmanifest",
   icons: { icon: "/favicon.ico", apple: "/logo-256.png" },
 };
 
@@ -23,7 +25,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: boot }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <PwaRegister />
+        {children}
+      </body>
     </html>
   );
 }

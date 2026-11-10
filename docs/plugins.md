@@ -42,6 +42,8 @@ def register(context):
     context.add_route("POST", "/api/plugins/ext/sample/ping", ping, "dataset")
 ```
 
+`add_detector(detector)` appends a predict backend. `add_job(kind, title, fn)` calls the core job registry when `fn` is set. `add_exporter(id, title, fn)` does the same for a folder export. A call without `fn` only stores the title.
+
 Routes must start with `/api/plugins/ext/<id>/`. The host checks the permission before the route is stored. A failing `register` is recorded on the plugin and does not stop the server.
 
 Frontend files are served at `/api/plugins/file/<id>/<path>` after a path-traversal check. The static shell does not need a rebuild.

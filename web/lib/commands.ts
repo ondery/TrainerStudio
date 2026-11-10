@@ -6,8 +6,16 @@ import { api } from "./api";
 import { deleteSelected, drawCommands, pasteIntoImage } from "./draw";
 import { toggleFlag, toggleReviewed } from "./flags";
 import { boundsOf } from "./geom";
+import { PANELS } from "./grid";
 import { runEnterprise } from "./ee-actions";
 import { i18n } from "./i18n";
+import {
+  getCommand,
+  registerCommand,
+  registerPrefix,
+  runRegistered,
+} from "./registry";
+import { formatCombo, loadShortcuts, type ShortcutAction } from "./shortcuts";
 import { newAnnotation, useStudio } from "./store";
 import type { Annotation, Geometry, Point } from "./types";
 
@@ -65,7 +73,7 @@ function selectedRows(): Annotation[] {
   return studio.editor.annotations.filter((row) => ids.has(row.id));
 }
 
-export function runCommand(id: string) {
+function dispatch(id: string) {
   const studio = useStudio.getState();
   const open = (
     dialog:
@@ -372,3 +380,459 @@ function toggleClass(lock: boolean) {
   else current.add(classId);
   patchAppearance({ [key]: [...current] });
 }
+
+type CatalogRow = {
+  id: string;
+  titleKey: string;
+  category:
+    | "file"
+    | "edit"
+    | "view"
+    | "image"
+    | "tool"
+    | "ann"
+    | "classes"
+    | "tools"
+    | "ai"
+    | "layout"
+    | "ee";
+  shortcut?: ShortcutAction;
+  order: number;
+};
+
+const CORE_COMMANDS: CatalogRow[] = [
+  { id: "file.new", titleKey: "file.new", category: "file", order: 10 },
+  { id: "file.wizard", titleKey: "m.wizard", category: "file", order: 20 },
+  { id: "file.open", titleKey: "file.open", category: "file", order: 30 },
+  { id: "import.yolo", titleKey: "m.yolo", category: "file", order: 40 },
+  { id: "import.legacy", titleKey: "m.legacy", category: "file", order: 50 },
+  { id: "import.coco", titleKey: "m.coco", category: "file", order: 60 },
+  { id: "import.voc", titleKey: "m.voc", category: "file", order: 70 },
+  {
+    id: "import.tasks",
+    titleKey: "dataset.tasks",
+    category: "file",
+    order: 80,
+  },
+  { id: "file.close", titleKey: "file.close", category: "file", order: 90 },
+  { id: "file.save", titleKey: "m.save", category: "file", order: 100 },
+  { id: "file.saveAll", titleKey: "m.saveAll", category: "file", order: 110 },
+  { id: "file.revert", titleKey: "m.revert", category: "file", order: 120 },
+  {
+    id: "export.yolo",
+    titleKey: "file.export",
+    category: "file",
+    shortcut: "export",
+    order: 130,
+  },
+  { id: "export.coco", titleKey: "m.coco", category: "file", order: 140 },
+  { id: "export.voc", titleKey: "m.voc", category: "file", order: 150 },
+  {
+    id: "export.tasks",
+    titleKey: "dataset.tasks",
+    category: "file",
+    order: 160,
+  },
+  {
+    id: "export.grouped",
+    titleKey: "file.split",
+    category: "file",
+    order: 170,
+  },
+  { id: "file.split", titleKey: "file.split", category: "file", order: 180 },
+  {
+    id: "dataset.split",
+    titleKey: "dataset.split",
+    category: "file",
+    order: 190,
+  },
+  {
+    id: "file.snapshot",
+    titleKey: "file.snapshot",
+    category: "file",
+    order: 200,
+  },
+  {
+    id: "dataset.snapshot",
+    titleKey: "dataset.snapshot",
+    category: "file",
+    order: 210,
+  },
+  {
+    id: "file.settings",
+    titleKey: "file.settings",
+    category: "file",
+    shortcut: "settings",
+    order: 220,
+  },
+  {
+    id: "edit.undo",
+    titleKey: "edit.undo",
+    category: "edit",
+    shortcut: "undo",
+    order: 10,
+  },
+  {
+    id: "edit.redo",
+    titleKey: "edit.redo",
+    category: "edit",
+    shortcut: "redo",
+    order: 20,
+  },
+  { id: "edit.cut", titleKey: "m.cut", category: "edit", order: 30 },
+  {
+    id: "edit.copy",
+    titleKey: "edit.copy",
+    category: "edit",
+    shortcut: "copy",
+    order: 40,
+  },
+  {
+    id: "edit.paste",
+    titleKey: "edit.paste",
+    category: "edit",
+    shortcut: "paste",
+    order: 50,
+  },
+  {
+    id: "edit.duplicate",
+    titleKey: "m.duplicate",
+    category: "edit",
+    shortcut: "duplicate",
+    order: 60,
+  },
+  {
+    id: "edit.delete",
+    titleKey: "edit.delete",
+    category: "edit",
+    shortcut: "delete",
+    order: 70,
+  },
+  {
+    id: "edit.all",
+    titleKey: "m.selectAll",
+    category: "edit",
+    shortcut: "selectAll",
+    order: 80,
+  },
+  { id: "edit.invert", titleKey: "m.invert", category: "edit", order: 90 },
+  { id: "edit.class", titleKey: "m.selectClass", category: "edit", order: 100 },
+  {
+    id: "edit.prev",
+    titleKey: "m.copyPrev",
+    category: "edit",
+    shortcut: "copyPrev",
+    order: 110,
+  },
+  {
+    id: "edit.palette",
+    titleKey: "edit.palette",
+    category: "edit",
+    shortcut: "palette",
+    order: 120,
+  },
+  {
+    id: "tools.palette",
+    titleKey: "edit.palette",
+    category: "tools",
+    shortcut: "palette",
+    order: 40,
+  },
+  {
+    id: "view.fit",
+    titleKey: "view.fit",
+    category: "view",
+    shortcut: "fit",
+    order: 10,
+  },
+  {
+    id: "image.fit",
+    titleKey: "image.fit",
+    category: "image",
+    shortcut: "fit",
+    order: 80,
+  },
+  {
+    id: "view.in",
+    titleKey: "view.zoomIn",
+    category: "view",
+    shortcut: "zoomIn",
+    order: 20,
+  },
+  {
+    id: "view.out",
+    titleKey: "view.zoomOut",
+    category: "view",
+    shortcut: "zoomOut",
+    order: 30,
+  },
+  {
+    id: "view.100",
+    titleKey: "m.zoom100",
+    category: "view",
+    shortcut: "zoom100",
+    order: 40,
+  },
+  {
+    id: "image.100",
+    titleKey: "m.zoom100",
+    category: "image",
+    shortcut: "zoom100",
+    order: 90,
+  },
+  { id: "view.labels", titleKey: "m.labels", category: "view", order: 50 },
+  { id: "view.names", titleKey: "m.classNames", category: "view", order: 60 },
+  { id: "view.fill", titleKey: "m.fill", category: "view", order: 70 },
+  { id: "view.grid", titleKey: "view.grid", category: "view", order: 80 },
+  { id: "view.minimap", titleKey: "view.panels", category: "view", order: 90 },
+  { id: "view.dark", titleKey: "view.dark", category: "view", order: 100 },
+  { id: "view.light", titleKey: "view.light", category: "view", order: 110 },
+  { id: "view.system", titleKey: "view.light", category: "view", order: 120 },
+  { id: "view.ribbon", titleKey: "view.compact", category: "view", order: 130 },
+  {
+    id: "view.compact",
+    titleKey: "view.compact",
+    category: "view",
+    order: 140,
+  },
+  {
+    id: "view.cross",
+    titleKey: "view.crossFull",
+    category: "view",
+    shortcut: "guides",
+    order: 150,
+  },
+  {
+    id: "view.cursor",
+    titleKey: "view.crossCursor",
+    category: "view",
+    shortcut: "crossCursor",
+    order: 160,
+  },
+  {
+    id: "image.prev",
+    titleKey: "image.prev",
+    category: "image",
+    shortcut: "bracketPrev",
+    order: 10,
+  },
+  {
+    id: "image.next",
+    titleKey: "image.next",
+    category: "image",
+    shortcut: "bracketNext",
+    order: 20,
+  },
+  {
+    id: "image.skip",
+    titleKey: "image.next",
+    category: "image",
+    shortcut: "skipTask",
+    order: 30,
+  },
+  { id: "image.first", titleKey: "image.prev", category: "image", order: 40 },
+  { id: "image.last", titleKey: "image.next", category: "image", order: 50 },
+  { id: "image.goto", titleKey: "m.goto", category: "image", order: 60 },
+  { id: "image.flag", titleKey: "m.flag", category: "image", order: 70 },
+  {
+    id: "image.reviewed",
+    titleKey: "m.reviewed",
+    category: "image",
+    order: 75,
+  },
+  { id: "image.rotate", titleKey: "m.rotate", category: "image", order: 78 },
+  {
+    id: "tool.select",
+    titleKey: "tools.select",
+    category: "tool",
+    shortcut: "tool.select",
+    order: 10,
+  },
+  {
+    id: "tool.bbox",
+    titleKey: "tools.bbox",
+    category: "tool",
+    shortcut: "tool.bbox",
+    order: 20,
+  },
+  {
+    id: "tool.polygon",
+    titleKey: "tools.polygon",
+    category: "tool",
+    shortcut: "tool.polygon",
+    order: 30,
+  },
+  {
+    id: "tool.obb",
+    titleKey: "tools.obb",
+    category: "tool",
+    shortcut: "tool.obb",
+    order: 40,
+  },
+  {
+    id: "tool.pose",
+    titleKey: "tools.pose",
+    category: "tool",
+    shortcut: "tool.pose",
+    order: 50,
+  },
+  {
+    id: "tool.sam",
+    titleKey: "tools.sam",
+    category: "tool",
+    shortcut: "tool.sam",
+    order: 60,
+  },
+  {
+    id: "tool.pan",
+    titleKey: "tools.pan",
+    category: "tool",
+    shortcut: "tool.pan",
+    order: 70,
+  },
+  { id: "ann.box", titleKey: "ann.box", category: "ann", order: 10 },
+  { id: "ann.poly", titleKey: "ann.polygon", category: "ann", order: 20 },
+  { id: "ann.obb", titleKey: "ann.obb", category: "ann", order: 30 },
+  { id: "ann.merge", titleKey: "m.merge", category: "ann", order: 40 },
+  { id: "ann.split", titleKey: "m.merge", category: "ann", order: 50 },
+  { id: "ann.lock", titleKey: "m.lock", category: "ann", order: 60 },
+  { id: "ann.hide", titleKey: "m.hide", category: "ann", order: 70 },
+  { id: "ann.front", titleKey: "m.front", category: "ann", order: 80 },
+  { id: "ann.back", titleKey: "m.back", category: "ann", order: 90 },
+  { id: "ann.class", titleKey: "ann.box", category: "ann", order: 100 },
+  { id: "ann.schema", titleKey: "ann.schema", category: "ann", order: 110 },
+  {
+    id: "classes.schema",
+    titleKey: "ann.schema",
+    category: "classes",
+    order: 40,
+  },
+  {
+    id: "classes.add",
+    titleKey: "classes.add",
+    category: "classes",
+    order: 10,
+  },
+  {
+    id: "classes.hide",
+    titleKey: "classes.panel",
+    category: "classes",
+    order: 20,
+  },
+  {
+    id: "classes.lock",
+    titleKey: "classes.panel",
+    category: "classes",
+    order: 30,
+  },
+  {
+    id: "tools.shortcuts",
+    titleKey: "tools.shortcuts",
+    category: "tools",
+    shortcut: "shortcuts",
+    order: 10,
+  },
+  {
+    id: "help.shortcuts",
+    titleKey: "help.shortcuts",
+    category: "tools",
+    shortcut: "shortcuts",
+    order: 15,
+  },
+  {
+    id: "tools.qc",
+    titleKey: "tools.qc",
+    category: "tools",
+    shortcut: "qc",
+    order: 20,
+  },
+  {
+    id: "dataset.qc",
+    titleKey: "tools.qc",
+    category: "tools",
+    shortcut: "qc",
+    order: 25,
+  },
+  {
+    id: "tools.history",
+    titleKey: "tools.history",
+    category: "tools",
+    shortcut: "history",
+    order: 30,
+  },
+  { id: "ai.jobs", titleKey: "ai.status", category: "ai", order: 10 },
+  { id: "ai.install", titleKey: "ai.install", category: "ai", order: 20 },
+  { id: "window.save", titleKey: "window.save", category: "layout", order: 10 },
+  {
+    id: "layout.default",
+    titleKey: "window.default",
+    category: "layout",
+    order: 20,
+  },
+  {
+    id: "layout.labeling",
+    titleKey: "window.labeling",
+    category: "layout",
+    order: 30,
+  },
+  {
+    id: "layout.review",
+    titleKey: "window.review",
+    category: "layout",
+    order: 40,
+  },
+  {
+    id: "layout.training",
+    titleKey: "window.training",
+    category: "layout",
+    order: 50,
+  },
+  { id: "help.about", titleKey: "help.about", category: "tools", order: 50 },
+  { id: "ee.video", titleKey: "ee.video", category: "ee", order: 10 },
+  { id: "ee.camera", titleKey: "ee.camera", category: "ee", order: 20 },
+  { id: "ee.remote", titleKey: "ee.remote", category: "ee", order: 30 },
+  { id: "ee.rbac", titleKey: "ee.rbac", category: "ee", order: 40 },
+  { id: "ee.review", titleKey: "ee.review", category: "ee", order: 50 },
+  { id: "ee.queue", titleKey: "ee.queue", category: "ee", order: 60 },
+];
+
+let booted = false;
+
+function bootCommands() {
+  if (booted) return;
+  booted = true;
+  for (const spec of CORE_COMMANDS) {
+    registerCommand({ ...spec, run: () => dispatch(spec.id) });
+  }
+  for (const id of PANELS) {
+    registerCommand({
+      id: `panel.${id}`,
+      titleKey: `panel.${id}`,
+      category: "view",
+      order: 200,
+      run: () => dispatch(`panel.${id}`),
+    });
+  }
+  registerPrefix(
+    (id) =>
+      id.startsWith("panel.") ||
+      id.startsWith("ee.") ||
+      id.startsWith("tool.") ||
+      id.startsWith("layout."),
+    (id) => dispatch(id),
+  );
+}
+
+export function runCommand(id: string) {
+  bootCommands();
+  runRegistered(id);
+}
+
+export function commandKbd(id: string): string {
+  bootCommands();
+  const spec = getCommand(id);
+  if (!spec?.shortcut) return "";
+  return formatCombo(loadShortcuts()[spec.shortcut]);
+}
+
+bootCommands();

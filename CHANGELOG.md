@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+
+The open core now has a shared command registry, shortcut when-clauses, one overlay stack, a layout audit, an installable PWA, engine plugins, SAM weight checks, and exports beyond YOLO, COCO, and Pascal VOC. `src-tauri/` builds Windows, macOS, and Linux installers from a `v*` tag. Video, team accounts, and the multi-job GPU queue stay in the commercial add-on.
+
 ## 0.6.4.3
 
 Status: early development. This public tree is a pre-1.0 preview, not a stable 1.0 release. Expect bugs and breaking changes. A later workbench revision (shared command registry, keybinding when-clauses, one overlay stack, layout audit) is not in this preview. There is no installable PWA, no macOS or Linux installer, and no tagged 1.0 release.

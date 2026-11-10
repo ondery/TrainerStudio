@@ -189,6 +189,44 @@ def test_label_identity_is_size_and_mtime(tmp_path, data_home):
     assert len(token) < 48
 
 
+def test_sam_segment_returns_every_polygon(monkeypatch, tmp_path):
+    from trainer_studio.sam import segment
+
+    class Masks:
+        xy = [
+            [(0, 0), (4, 0), (4, 4), (0, 4)],
+            [(0, 0), (2, 0), (2, 2), (0, 2), (1, 3)],
+        ]
+
+    class Result:
+        masks = Masks()
+
+    class Model:
+        def predict(self, *_args, **_kwargs):
+            assert _kwargs.get("conf") == 0.4
+            return [Result()]
+
+    import importlib
+
+    real_import = importlib.import_module
+
+    def fake_import(name, package=None):
+        if name == "ultralytics":
+            return object()
+        return real_import(name, package)
+
+    monkeypatch.setattr("trainer_studio.sam._weights", lambda _model: "mobile_sam.pt")
+    monkeypatch.setattr("trainer_studio.sam._device", lambda _device: "cpu")
+    monkeypatch.setattr("trainer_studio.sam._load", lambda _weights, _device: Model())
+    monkeypatch.setattr(importlib, "import_module", fake_import)
+    image = tmp_path / "frame.jpg"
+    image.write_bytes(b"not-a-real-jpeg")
+    body = segment(image, [{"x": 1, "y": 1}], [1], "mobile_sam", "cpu", 0.4)
+    assert body["polygons"] == 2
+    assert len(body["choices"]) == 2
+    assert body["geometry"]["points"]
+
+
 def test_sam_missing_is_not_a_server_error():
     from trainer_studio.sam import segment
 

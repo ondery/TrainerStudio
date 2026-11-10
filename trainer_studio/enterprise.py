@@ -14,6 +14,7 @@ from trainer_studio.errors import StudioError
 from trainer_studio.service import _project_row
 
 _PAID = {
+    "account_rows",
     "add_folder",
     "assign_review",
     "audit",
@@ -21,6 +22,7 @@ _PAID = {
     "camera_status",
     "claim_job",
     "class_counts",
+    "create_account",
     "current_role",
     "cut_files",
     "enqueue",
@@ -28,6 +30,7 @@ _PAID = {
     "import_remote",
     "install_plugin",
     "link_shapes",
+    "login_account",
     "next_active",
     "open_store",
     "paste_files",
@@ -95,6 +98,26 @@ def may_delete() -> bool:
     if runtime is None:
         return True
     return bool(runtime.may_delete())
+
+
+def may_settle() -> bool:
+    runtime = _runtime()
+    if runtime is None or not hasattr(runtime, "may_settle"):
+        return True
+    return bool(runtime.may_settle())
+
+
+def assigned_images(project_id: str):
+    import os
+
+    from trainer_studio.db import data_dir
+
+    if not os.environ.get("STUDIO_LICENSE") and not (data_dir() / "license.key").is_file():
+        return None
+    runtime = _runtime()
+    if runtime is None or not hasattr(runtime, "assigned_images"):
+        return None
+    return runtime.assigned_images(project_id)
 
 
 def _yaml_bytes(root: Path) -> bytes:

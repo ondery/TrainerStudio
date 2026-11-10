@@ -5,8 +5,11 @@ import * as Tooltip from "@radix-ui/react-tooltip";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Switch from "@radix-ui/react-switch";
 import { forwardRef, useEffect, useRef, useState, type ComponentType, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { popOverlay, pushOverlay } from "@/lib/overlay";
 import { cn } from "@/lib/utils";
 import { Grid } from "@/components/studio/grid-view";
+
+let modalSerial = 0;
 
 export function Tip({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -119,8 +122,16 @@ export function Menu({
   icon?: ComponentType<{ className?: string }>;
   children: ReactNode;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useRef("");
+  if (!menuId.current) menuId.current = `menu-${(modalSerial += 1)}`;
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    pushOverlay({ id: menuId.current, close: () => setMenuOpen(false), dismissPointer: false });
+    return () => popOverlay(menuId.current);
+  }, [menuOpen]);
   return (
-    <Dropdown.Root>
+    <Dropdown.Root open={menuOpen} onOpenChange={setMenuOpen}>
       <Dropdown.Trigger asChild>
         <button
           type="button"
@@ -172,8 +183,23 @@ export function Modal({
   flush?: boolean;
 }) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [zIndex, setZIndex] = useState(60);
   const returnTo = useRef<HTMLElement | null>(null);
   const wasOpen = useRef(false);
+  const closeRef = useRef(onClose);
+  const overlayId = useRef("");
+  if (!overlayId.current) overlayId.current = `modal-${(modalSerial += 1)}`;
+  closeRef.current = onClose;
+  useEffect(() => {
+    if (!open) return undefined;
+    const z = pushOverlay({
+      id: overlayId.current,
+      close: () => closeRef.current(),
+      dismissPointer: false,
+    });
+    setZIndex(z);
+    return () => popOverlay(overlayId.current);
+  }, [open]);
   if (open && !wasOpen.current) {
     const active = document.activeElement;
     if (active instanceof HTMLElement) returnTo.current = active;
@@ -197,13 +223,13 @@ export function Modal({
   return (
     <Dialog.Root open={open} onOpenChange={(next) => !next && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/45" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/45" style={{ zIndex }} />
         <Dialog.Content
           className={cn(
-            "fixed left-1/2 top-[8vh] z-[60] flex max-h-[84vh] flex-col overflow-hidden rounded-xl border border-line bg-panel text-ink shadow-pop",
+            "fixed left-1/2 top-[8vh] flex max-h-[84vh] flex-col overflow-hidden rounded-xl border border-line bg-panel text-ink shadow-pop",
             wide ? "w-[min(1040px,calc(100vw-24px))]" : "w-[min(640px,calc(100vw-24px))]",
           )}
-          style={{ transform: `translate(calc(-50% + ${offset.x}px), ${offset.y}px)` }}
+          style={{ zIndex, transform: `translate(calc(-50% + ${offset.x}px), ${offset.y}px)` }}
           onCloseAutoFocus={(event) => {
             const node = returnTo.current;
             if (!node?.isConnected) return;

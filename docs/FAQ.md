@@ -1,12 +1,12 @@
 # Trainer Studio FAQ
 
-Status: early development. Version 0.6.4.3 is a pre-1.0 preview. Expect bugs and breaking changes.
+Version 1.0.0. Video, team accounts, and the multi-job GPU queue stay in the commercial add-on.
 
 Short answers to the questions people ask before installing the open core. The same topics are summarized in the [README](../README.md).
 
 ## Is this a finished 1.0?
 
-No. The public tree is an early preview. Labeling and YOLO save/export are what you can use today. Training, SAM, a shared command registry, installers, and a PWA are partial or not in this preview.
+Yes. Version 1.0.0 is the tagged release of the open core. Video, team accounts, and the multi-job GPU queue stay in the commercial add-on and are locked in this public tree.
 
 ## Is Trainer Studio free?
 
@@ -18,7 +18,7 @@ Yes. Labeling, class edits, saving, and export talk only to the Trainer Studio p
 
 ## Which formats does it support?
 
-Opened datasets are Ultralytics YOLO: `data.yaml` and label text for detect, segment, oriented boxes, or pose. Export can write a new folder as YOLO, COCO JSON, or Pascal VOC XML.
+Opened datasets are Ultralytics YOLO: `data.yaml` and label text for detect, segment, oriented boxes, or pose. Export can write a new folder as YOLO, COCO JSON, Pascal VOC XML, CreateML, CVAT XML, LabelMe, KITTI, Darknet, or Open Images CSV.
 
 ## How do I export to YOLO?
 

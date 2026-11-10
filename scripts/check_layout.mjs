@@ -15,6 +15,9 @@ assert.equal(areas.length, 12);
 assert.ok(areas.every((row) => row.split(" ").length === 12));
 assert.ok(areas[0].startsWith("left left"));
 assert.ok(areas[11].split(" ").every((cell) => cell === "bottom"));
+const rtl = workspaceAreas(2, 2, 2, true);
+assert.ok(rtl[0].startsWith("right right"));
+assert.ok(rtl[0].endsWith("left left"));
 assert.equal(preset("default").showGrid, false);
 
 for (const name of ["default", "labeling", "review", "training"]) {

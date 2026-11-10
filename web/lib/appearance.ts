@@ -21,7 +21,7 @@ export type Appearance = {
   epochs: number;
   imgsz: number;
   batch: number;
-  exportFormat: "yolo" | "coco" | "voc";
+  exportFormat: string;
   exportDir: string;
   trainOutput: string;
   samCheckpoint: string;

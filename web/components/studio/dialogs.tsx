@@ -291,9 +291,24 @@ function ExportDialog({
   const [skipEmpty, setSkipEmpty] = useState(() => appearance().exportEmpty);
   const [dest, setDest] = useState(() => appearance().exportDir);
   const [report, setReport] = useState("");
+  const [extras, setExtras] = useState<{ id: string; title: string }[]>([]);
   useEffect(() => {
     if (project) setTask(project.task);
   }, [project]);
+  useEffect(() => {
+    if (!open) return;
+    void api<{ plugins: { id: string; exporters?: { id: string; title: string }[] }[] }>("/api/plugins")
+      .then((body) => {
+        const rows = [];
+        for (const plugin of body.plugins || []) {
+          for (const exporter of plugin.exporters || []) {
+            rows.push({ id: `${plugin.id}.${exporter.id}`, title: exporter.title || exporter.id });
+          }
+        }
+        setExtras(rows);
+      })
+      .catch(() => setExtras([]));
+  }, [open]);
   if (!project) return null;
   return (
     <Modal open={open} title={t("export.title")} onClose={onClose}>
@@ -302,13 +317,18 @@ function ExportDialog({
       <select
         className="mb-3 h-8 w-full rounded-md border border-line bg-panel-2 px-2"
         value={format}
-        onChange={(event) =>
-          setFormat(event.target.value as "yolo" | "coco" | "voc")
-        }
+        onChange={(event) => setFormat(event.target.value)}
       >
-        <option value="yolo">{t("export.yolo")}</option>
-        <option value="coco">{t("export.coco")}</option>
-        <option value="voc">{t("export.voc")}</option>
+        {["yolo", "coco", "voc", "createml", "cvat", "labelme", "kitti", "darknet", "openimages"].map((item) => (
+          <option key={item} value={item}>
+            {t(`export.${item}`, { defaultValue: item })}
+          </option>
+        ))}
+        {extras.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.title}
+          </option>
+        ))}
       </select>
       <FieldLabel>{t("task.detect")}</FieldLabel>
       <select
@@ -705,6 +725,7 @@ function JobsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
         batch: appearance().batch,
         workers: appearance().workers,
         output: output.trim() || undefined,
+        conf: appearance().prelabelConf,
         review: true,
         append: true,
       }),
@@ -712,8 +733,8 @@ function JobsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
       useStudio.getState().setNotice(error.message, "error"),
     );
   };
-  const install = () => {
-    void api("/api/ai/install", { method: "POST" }).catch((error: Error) =>
+  const install = (pack = "ai") => {
+    void api("/api/ai/install", { method: "POST", body: JSON.stringify({ pack }) }).catch((error: Error) =>
       useStudio.getState().setNotice(error.message, "error"),
     );
   };
@@ -829,8 +850,15 @@ function JobsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
             label={t("jobs.install")}
             icon={Package}
             tone="accent"
-            onClick={install}
+            onClick={() => install("ai")}
           />
+          {backend === "rtdetr" ? (
+            <TextButton
+              label={t("jobs.installRtdetr", { defaultValue: "Install RT-DETR" })}
+              icon={Package}
+              onClick={() => install("rtdetr")}
+            />
+          ) : null}
         </div>
       ) : null}
       <div className="mb-3 flex flex-wrap gap-2">

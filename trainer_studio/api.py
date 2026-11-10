@@ -357,13 +357,22 @@ def create_app() -> FastAPI:
         return body
 
     @app.post("/api/ai/install")
-    def ai_install():
-        return start_job("ai-install", None, {})
+    def ai_install(body: dict | None = None):
+        pack = str((body or {}).get("pack") or "ai")
+        if pack not in {"ai", "rtdetr"}:
+            pack = "ai"
+        return start_job("ai-install", None, {"pack": pack})
 
     @app.post("/api/projects/{project_id}/sam")
     def sam(project_id: str, body: dict):
         path = image_file(project_id, str(body.get("imageId") or ""))
-        return segment(path, body.get("points") or [], body.get("labels"), body.get("model"), body.get("device"))
+        return segment(path, body.get("points") or [], body.get("labels"), body.get("model"), body.get("device"), body.get("conf"))
+
+    @app.post("/api/ai/sam/download")
+    def sam_download(body: dict | None = None):
+        from trainer_studio.sam import download_weights
+
+        return download_weights(str((body or {}).get("model") or ""))
 
     @app.post("/api/projects/{project_id}/images/{image_id}/prelabel")
     def prelabel(project_id: str, image_id: str, body: dict | None = None):
@@ -449,13 +458,19 @@ def create_app() -> FastAPI:
     def ee_video(body: dict):
         from trainer_studio.enterprise import extract_frames
 
-        return extract_frames(str(body.get("source") or ""), str(body.get("dest") or ""))
+        return extract_frames(
+            str(body.get("source") or ""),
+            str(body.get("dest") or ""),
+            int(body.get("stride") or 30),
+            int(body.get("limit") or 500),
+            str(body.get("project") or ""),
+        )
 
     @app.get("/api/ee/camera")
-    def ee_camera(index: int = 0):
+    def ee_camera(index: int = 0, dest: str = ""):
         from trainer_studio.enterprise import camera_status
 
-        return camera_status(index)
+        return camera_status(index, dest)
 
     @app.post("/api/ee/remote")
     def ee_remote(body: dict):
@@ -509,15 +524,20 @@ def create_app() -> FastAPI:
 
     @app.get("/api/ee/teams")
     def ee_teams():
-        from trainer_studio.enterprise import current_role, require_feature
+        from trainer_studio.enterprise import account_rows
 
-        require_feature("rbac")
-        return {"ready": True, "role": current_role()}
+        return account_rows()
 
     @app.post("/api/ee/teams")
     def ee_teams_set(body: dict):
-        from trainer_studio.enterprise import set_role
+        from trainer_studio.enterprise import create_account, login_account, set_role
 
+        name = str(body.get("name") or "")
+        password = str(body.get("password") or "")
+        if name and password and body.get("login"):
+            return login_account(name, password)
+        if name and password:
+            return create_account(name, password, str(body.get("role") or "labeler"))
         return set_role(str(body.get("role") or ""))
 
     @app.get("/api/ee/sso")
@@ -615,6 +635,13 @@ def create_app() -> FastAPI:
 
     _open_env_dataset()
 
+    @app.get("/manifest.webmanifest")
+    def web_manifest():
+        path = _public_file("manifest.webmanifest")
+        if path is None:
+            raise StudioError(code="ui.missing", status=404)
+        return FileResponse(path, media_type="application/manifest+json")
+
     @app.get("/ee-addon.js")
     def ee_addon():
         from trainer_studio.enterprise import addon_path
@@ -634,6 +661,19 @@ def create_app() -> FastAPI:
             return JSONResponse({"detail": text("ui.missing"), "code": "ui.missing"}, status_code=503)
 
     return app
+
+
+def _public_file(name: str) -> Path | None:
+    roots = [
+        Path(__file__).resolve().parents[1] / "web" / "public",
+        Path(__file__).resolve().parents[1] / "static",
+        Path(__file__).resolve().parents[1] / "web" / "out",
+    ]
+    for root in roots:
+        candidate = root / name
+        if candidate.is_file():
+            return candidate
+    return None
 
 
 def _open_env_dataset() -> None:

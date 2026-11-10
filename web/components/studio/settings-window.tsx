@@ -28,7 +28,7 @@ import { FILTERS } from "@/lib/browse";
 import { APPEARANCE_KEY, DEFAULT_APPEARANCE, appearance, patchAppearance, useAppearance, type Appearance } from "@/lib/appearance";
 import { LOCALES, applyLocale } from "@/lib/i18n";
 import { BREAKPOINTS, LAYOUT_KEY, breakpointFor, buildTemplates, loadLayout, normalize, saveLayout, snap } from "@/lib/grid";
-import { DEFAULT_SHORTCUTS, SHORTCUT_ACTIONS, comboFromEvent, loadShortcuts, saveShortcuts, type ShortcutAction } from "@/lib/shortcuts";
+import { DEFAULT_SHORTCUTS, SHORTCUT_ACTIONS, bindingConflicts, comboFromEvent, conflictedActions, loadShortcuts, saveShortcuts, type ShortcutAction } from "@/lib/shortcuts";
 import { useStudio } from "@/lib/store";
 import { PathField } from "./path-field";
 import { AdvancedSettings, AnnotationSettings, AppearanceSettings, CanvasSettings, ClassSettingsExtra, ExportSettingsExtra, GeneralSettings, NavigationSettings, PerformanceSettings, SamSettingsExtra, TrainingSettingsExtra } from "./settings-fields";
@@ -513,6 +513,10 @@ export function ShortcutEditor({ active = true }: { active?: boolean }) {
         return;
       }
       const combo = comboFromEvent(event);
+      if (bindingConflicts(map, listen, combo)) {
+        setListen(null);
+        return;
+      }
       const next = { ...map, [listen]: combo };
       setMap(next);
       saveShortcuts(next);
@@ -521,15 +525,7 @@ export function ShortcutEditor({ active = true }: { active?: boolean }) {
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
   }, [active, listen, map]);
-  const conflicts = useMemo(() => {
-    const owners = new Map<string, ShortcutAction[]>();
-    for (const action of SHORTCUT_ACTIONS) {
-      const list = owners.get(map[action]) || [];
-      list.push(action);
-      owners.set(map[action], list);
-    }
-    return owners;
-  }, [map]);
+  const conflicts = useMemo(() => conflictedActions(map), [map]);
   const rows = SHORTCUT_ACTIONS.filter((action) => {
     const label = t(`shortcuts.${action}`, { defaultValue: action });
     return `${label} ${map[action]}`.toLowerCase().includes(query.trim().toLowerCase());
@@ -549,7 +545,7 @@ export function ShortcutEditor({ active = true }: { active?: boolean }) {
       </div>
       <SettingsCard>
         {rows.map((action) => {
-          const clash = (conflicts.get(map[action]) || []).length > 1;
+          const clash = conflicts.has(action);
           const label = t(`shortcuts.${action}`, { defaultValue: action });
           return (
             <SettingRow key={action} label={label} hint={clash ? t("settings.conflict") : undefined}>

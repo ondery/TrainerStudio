@@ -10,15 +10,18 @@ from trainer_studio.messages import text
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIREMENTS = ROOT / "requirements-ai.txt"
+REQUIREMENTS_RTDETR = ROOT / "requirements-rtdetr.txt"
+_PACKS = {"ai": REQUIREMENTS, "rtdetr": REQUIREMENTS_RTDETR}
 
 
 def _present(name: str) -> bool:
     return importlib.util.find_spec(name) is not None
 
 
-def install_args() -> list[str]:
+def install_args(pack: str = "ai") -> list[str]:
     """The only install command the server will run. The client cannot add packages."""
-    return [sys.executable, "-m", "pip", "install", "-r", str(REQUIREMENTS)]
+    requirements = _PACKS.get(pack, REQUIREMENTS)
+    return [sys.executable, "-m", "pip", "install", "-r", str(requirements)]
 
 
 def resolve_device(requested: str | None) -> str:
